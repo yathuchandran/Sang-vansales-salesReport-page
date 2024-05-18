@@ -156,6 +156,17 @@ export const GetDriver= async(payload)=>{
           console.error("GetSalesBatch", error);
         }
         }
+
+        export const GetSalesDetails= async(payload)=>{
+          try {
+            const response = await api.get("GetSalesDetails", {
+              params: payload,
+            });
+            return response;
+          } catch (error) {
+            console.error("GetSalesDetails", error);
+          }
+          }
     
 //POST METHORD LIKE THIS----------------------------------------------------------------------------------------------------------------------------
 export const DeleteAllTransactions= async(payload)=>{
@@ -177,6 +188,27 @@ try {
 }
 
 
+export const PostSales= async(payload)=>{
+  try {
+    const response = await api.post("PostSales", payload);
+    return response;
+  } catch (error) {
+    console.error("PostSales", error);
+  }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  //----------------------------------------------------------------
 export const GetActions= async(payload)=>{
    return makeAuthorizedRequest("get","Profile/GetActions",payload );
   }

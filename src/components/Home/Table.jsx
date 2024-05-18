@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 
 import MuiEditableTable from './MuiEditableTable';
+import RoleSummary from './tableees';
 
-function Body({outlet,warehouseId}) {
+function Body({outlet,warehouseId,setProductIds}) {
 
     
     const [selectedHeaderMain, setselectedHeaderMain] = useState("Main")
@@ -111,7 +112,8 @@ const combinedBody = [...fixedFields]
       <div >
        
       {
-        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId}      />
+        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId} setProductIds={setProductIds}     />
+        // <RoleSummary />
       }
       
       </div>

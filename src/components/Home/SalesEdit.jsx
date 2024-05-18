@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
+import Swal from "sweetalert2";
 
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -33,7 +34,7 @@ import {
 } from "mdb-react-ui-kit";
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { GetNextDocNo, GetPrev_NextDocNo, GetWarehouse } from '../../api/Api';
+import { DeleteAllTransactions, GetNextDocNo, GetPrev_NextDocNo, GetWarehouse, PostSales } from '../../api/Api';
 import AutoComplete3 from './AutoComplete/AutocmpltWarehouse';
 import SalesManAuto from './AutoComplete/SalesManAuto';
 import OutletAuto from './AutoComplete/outlet';
@@ -54,11 +55,8 @@ function HSEreport({ data }) {
     const tenDaysAgoDay = String(tenDaysAgoDate.getDate()).padStart(2, "0");
     const formattedTenDaysAgoDate = `${tenDaysAgoYear}-${tenDaysAgoMonth}-${tenDaysAgoDay}`;
 
-    const [Project, setProject] = useState(0)
-    const [riskLevel, setRiskLevel] = useState(0);
-    const [iProjects, setIproject] = useState(0)
-    const [intiate, setinitiate] = useState(0)
-    const [Action, setAction] = useState(0)
+    const [saleManeId, setsaleManeId] = useState(0)
+    const [outletid, setoutletid] = useState(0)
 
    
 
@@ -78,6 +76,7 @@ function HSEreport({ data }) {
     const [narration, setNarration] = useState('')
     const [typess, setTypes] = useState(null)
     const [warehouseId, setWarehouseId] = useState(0)
+    const [productIDs, setProductIds] = useState(0);
 
   
     const buttonStyle = {
@@ -87,24 +86,10 @@ function HSEreport({ data }) {
         boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.3)",
     };
 
-    const suggestionRistLevel = [
-        { iId: 1, sName: "Low" },
-        { iId: 2, sName: "Medium" },
-        { iId: 3, sName: "High" },
-    ];
+  
 
     //API DATA CALLING USEEFECT-------------------------------------------------------------------------------------
     useEffect(() => {
-
-
-        if (data && Object.keys(data).length > 0) {
-            const result = suggestionRistLevel.find(
-                (item) => item.iId === data?.iRiskLevel
-            );
-            setRiskLevel(result)
-        }
-
-
 
         const GetNextDocNums = async () => {
             try {
@@ -257,32 +242,31 @@ function HSEreport({ data }) {
 
     //FORM INPUT FIELD DATA SETTING FUNCTIONS-------------------------------------
     const hndlPrjctChange = async (obj) => {
-        console.log(obj, "obj==============================");
         if (obj) {
             setWarehouseId(obj.iId)
             setWarehouse(obj.sName)
         } else {
-            setProject(0)
+            setWarehouseId(0)
             setWarehouse(0)
 
         }
     }
     const handleInitiate = async (obj) => {
         if (obj) {
-            setinitiate(obj.iId)
+            setsaleManeId(obj.iId)
             setsaleMane(obj.sName)
         } else {
             setsaleMane(0)
-            setinitiate(0)
+            setsaleManeId(0)
         }
     }
     const hndleAction = async (obj) => {
         if (obj) {
-            setAction(obj.iId)
+            setoutletid(obj.iId)
             setoutlet(obj.sName)
         } else {
             setoutlet(0)
-            setAction(0)
+            setoutletid(0)
         }
     }
 
@@ -296,27 +280,6 @@ function HSEreport({ data }) {
         navigates("/Sales");
     }
 
-    //PDF FUNCTIONSS------------------------------------------------------------------
-    const handleopenpdf = async (iTransId) => {
-        const crystalRes = await CrystalPrint({
-            iTransId: iTransId,
-            iFormtype: 1,
-        });
-        window.open(crystalRes.ResultData, "_blank")
-    }
-
-    const handleClosedpdf = async (iTransDtId) => {
-        if (iTransDtId) {
-            const crystalRes = await CrystalPrint({
-                iTransId: iTransDtId,
-                iFormtype: 3,
-            });
-
-            window.open(crystalRes.ResultData, "_blank")
-        }
-
-    }
-
     //GetPrev_NextDocNo================================================================
     const GetPrev_NextDocNos = async (id) => {
         console.log(id, "typess");
@@ -327,6 +290,7 @@ function HSEreport({ data }) {
                 iType: id,
             })
             const data = JSON.parse(response?.data.ResultData).Table
+            console.log(data,"====================================================");
             const docNo = data.map((item) => item.sDocNo)
             console.log(data, "respons");
             setdocNum(docNo.join())
@@ -339,7 +303,6 @@ function HSEreport({ data }) {
 
     const handleDelete = async () => {
         const data12 = selected
-        console.log(data12,"selectedselectedselectedselectedselectedselectedselectedselectedselectedselected");
 
         try {
             const shouldDelete = await Swal.fire({
@@ -360,15 +323,58 @@ function HSEreport({ data }) {
                 // Add success message here if needed
                 Swal.fire('Deleted!', 'The profile has been deleted.', 'success');
             }
-            fetchData(); // Initial data fetch
-            setchangesTriggered(true);
+            // fetchData(); // Initial data fetch
+            // setchangesTriggered(true);
         } catch (error) {
             // Add error message here if needed
             Swal.fire('Error', `${error.message}`, 'error');
-            setchangesTriggered(true);
-            fetchData(); // Initial data fetch
+            // setchangesTriggered(true);
+            // fetchData(); // Initial data fetch
         }
 
+    }
+
+
+    const handleSave=async()=>{
+        try {
+            const formData = {
+                iTransId: selected,
+                sDocNo: docNum,
+                sDate: curDates,
+                iDocType: 2,
+                iOutlet: outletid,
+                sNarration: narration,
+                iWarehouse: warehouseId,
+                iUser: userId,
+                iType_Sale: typess,
+                iDriver: saleManeId,
+                Body: [{
+                    iProduct: productIDs
+                }]
+            };
+            
+            console.log(formData,"formdata================================================================");
+            // Now you can use the formData variable to access or manipulate this data.
+            
+            // const res= await PostSales({
+            //     iTransId:selected,
+            //     sDocNo:docNum,
+            //     sDate:curDates,
+            //     iDocType:2,
+            //     iOutlet:outletid,
+            //     sNarration:narration,
+            //     iWarehouse: warehouseId,
+            //     iUser:userId,
+            //     iType_Sale:typess,
+            //     iDriver:saleManeId,
+            //     Body:[{
+            //         iProduct:productIDs
+            //     }]
+
+            // })
+        } catch (error) {
+            console.log("PostSales",error);
+        }
     }
 
     return (
@@ -426,13 +432,11 @@ function HSEreport({ data }) {
                                 </Button>
 
                                 <Button
-                                    // onClick={handleEdit}
-                                    // disabled={selected.length !== 1}
+                                    onClick={handleSave}
                                     variant="contained"
                                     style={buttonStyle}
-                                    startIcon={<EditIcon />}
                                 >
-                                    Edit
+                                    Save
                                 </Button>
                                 <Button
                                     onClick={handleDelete}
@@ -502,7 +506,7 @@ function HSEreport({ data }) {
                             </Box>
                         </Stack>
 
-                        <form                        >
+                        <form     >
                             <MDBCard
                                 className="text-center "
                                 style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)", zIndex: 1 }}
@@ -632,7 +636,8 @@ function HSEreport({ data }) {
                     </Box>
 
                     <EnhancedTable  outlet={outlet}
-                    warehouseId={warehouseId}  />
+                    warehouseId={warehouseId}
+                    setProductIds={setProductIds}  />
 
              
                 </Box>

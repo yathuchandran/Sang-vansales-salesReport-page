@@ -41,9 +41,7 @@ export default function OutletAuto({
     const [iTypeF2ICP, setiTypeF2ICP] = useState(1);
 
     useEffect(() => {
-        console.log(value, "value-searchkey");
         setSearchKey(value || "");
-
     }, [value]);
 
 

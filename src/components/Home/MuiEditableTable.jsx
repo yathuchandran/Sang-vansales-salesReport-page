@@ -554,7 +554,7 @@ import AutoComplete3 from './AutoComplete/AutocmpltWarehouse';
 import ProductAuto from './TableAuto/ProductAuto';
 import UnitAutocomplete from './TableAuto/unitAuto';
 import Swal from "sweetalert2";
-import { GetSalesBal_Qty, GetSalesBatch } from '../../api/Api';
+import { GetProductRate, GetSalesBal_Qty, GetSalesBatch } from '../../api/Api';
 import Modal from './Modals';
 import { MDBInput } from 'mdb-react-ui-kit';
 import { buttonColor1 } from '../../config';
@@ -563,7 +563,7 @@ const initialRows = [
     { id: 1,Product:'', iProduct: '',Unit: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '' }
 ];
 
-const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds }) => {
+const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds,outletid }) => {
     const [rows, setRows] = useState(initialRows);
     const [selected, setSelected] = useState([]);
     const [formData, setFormData] = useState(initialRows);
@@ -727,8 +727,27 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds }) => {
             }));
             setBatch(updatedData);
             //----------------------------------------------------------------
+
+            
         } catch (error) {
             console.log("GetSalesBatch", error);
+        }
+
+        try {
+            const  response=await GetProductRate({
+                iProductId:formData[rowIndex].iProduct,
+                iUnitId:formData[rowIndex].iUnit,
+                iOutletId:outletid,
+              })
+
+              console.log(response,"GetProductRate"); 
+              if (response==="Failure") {
+                setRate([])
+              }else{
+                setRate(response)
+              }
+        } catch (error) {
+            
         }
     };
 
@@ -873,6 +892,18 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds }) => {
         setTotalQuantity(newTotal);
     }, [formData]);
 
+
+    //Handle Rate--------------------------------------------------------------------------------------------------------------------------
+const handleRate=async(event, rowIndex)=>{
+    const typedValue = event.target.value;
+    setFormData(formData.map((row, index) => {
+        if (index === rowIndex) {
+            return { ...row, fRate: typedValue };
+        }
+        return row;
+    }));
+}
+
     const handleButtonClick = () => {
         setnewOpen(true);
         setMode("new");
@@ -889,9 +920,19 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds }) => {
     };
 
     useEffect(()=>{
-
+const prdctRate=async()=>{
+    try {
+      const  res=await GetProductRate({
+        iProductId:ProductId,
+        iUnitId:iUnit,
+        iOutletId:outletid,
+      })
+    } catch (error) {
+        console.log(error);
+    }
+}
     },[])
-console.log(formData.fQty,formData);
+console.log(formData.iUnit,formData,outletid,"=======================================================================================");
     return (
         <div>
             <IconButton
@@ -987,9 +1028,7 @@ console.log(formData.fQty,formData);
                                                 )
                                             ) : field.sFieldCaption === "Unit" ? (
                                                 <UnitAutocomplete
-                                                    // ProductId={formData.iProduct}
-                                                    // value={formData.Unit || ''}
-                                                    // onChangeName={handleUnit}
+                                              
                                                     ProductId={formData[rowIndex].iProduct}
                                                     value={formData[rowIndex].Unit || ''}
                                                     onChangeName={(obj) => handleUnit(obj, rowIndex)}
@@ -1001,8 +1040,7 @@ console.log(formData.fQty,formData);
                                                         variant="outlined"
                                                         size="small"
                                                         type="text"
-                                                        // value={formData.fQty || ''}
-                                                        // onChange={handleQuantity}
+                                                     
                                                         value={formData[rowIndex].fQty || ''}
                                                         onChange={(event) => handleQuantity(event, rowIndex)}
                                                         InputLabelProps={{
@@ -1036,8 +1074,7 @@ console.log(formData.fQty,formData);
                                                         variant="outlined"
                                                         size="small"
                                                         type="text"
-                                                        // value={formData.fFreeQty || ''}
-                                                        // onChange={handleFreeQuantity}
+                                                     
                                                         value={formData[rowIndex].fFreeQty || ''}
                                                         onChange={(event) => handleFreeQuantity(event, rowIndex)}
                                                         InputLabelProps={{
@@ -1096,10 +1133,216 @@ console.log(formData.fQty,formData);
                                                     }}
                                                 />
                                             ) : field.sFieldCaption === "Rate" ? (
-                                                <Typography> hello</Typography>
+                                                <TextField
+                                                label="Quantity"
+                                                variant="outlined"
+                                                size="small"
+                                                type="text"
+                                                
+                                                value={formData[rowIndex].fRate || ''}
+                                                onChange={(event) => handleRate(event, rowIndex)}
+                                                InputLabelProps={{
+                                                    style: {
+                                                        fontSize: '15px',
+                                                        backgroundColor: "white"
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    style: {
+                                                        border: '1px solid #FF5000',
+                                                        borderRadius: '2px',
+                                                        height: '35px'
+                                                    }
+                                                }}
+                                            />
                                             ) : field.sFieldCaption === "Excise Tax%" ? (
-                                                <Typography> hello</Typography>
-                                            ) : null}
+                                                // <Typography> hello</Typography>
+                                                <MDBInput
+                                                required
+                                                id="form3Example"
+                                                size="small"
+                                                value=''
+                                                readOnly
+                                                labelStyle={{ fontSize: '15px' }}
+                                                inputStyle={{
+                                                    border: 'none',
+                                                    backgroundColor: 'transparent',
+                                                    fontSize: '15px',
+                                                    paddingLeft: '8px',
+                                                    outline: 'none',
+                                                    width: '100%',
+                                                }}
+                                                InputLabelProps={{
+                                                    style: {
+                                                        fontSize: '15px',
+                                                        backgroundColor: "white"
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    style: {
+                                                        border: '1px solid #FF5000',
+                                                        borderRadius: '2px',
+                                                        height: '35px'
+                                                    }
+                                                }}
+                                            />
+                                            ): field.sFieldCaption === "Gross" ? (
+                                                <MDBInput
+                                                required
+                                                id="form3Example"
+                                                size="small"
+                                                value=''
+                                                readOnly
+                                                labelStyle={{ fontSize: '15px' }}
+                                                inputStyle={{
+                                                    border: 'none',
+                                                    backgroundColor: 'transparent',
+                                                    fontSize: '15px',
+                                                    paddingLeft: '8px',
+                                                    outline: 'none',
+                                                    width: '100%',
+                                                }}
+                                                InputLabelProps={{
+                                                    style: {
+                                                        fontSize: '15px',
+                                                        backgroundColor: "white"
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    style: {
+                                                        border: '1px solid #FF5000',
+                                                        borderRadius: '2px',
+                                                        height: '35px'
+                                                    }
+                                                }}
+                                            />
+                                            ) : field.sFieldCaption === "Discount" ? (
+                                                <TextField
+                                                variant="outlined"
+                                                size="small"
+                                                type="text"
+                                                
+                                                // value={formData[rowIndex].fRate || ''}
+                                                // onChange={(event) => handleRate(event, rowIndex)}
+                                                // InputLabelProps={{
+                                                //     style: {
+                                                //         fontSize: '15px',
+                                                //         backgroundColor: "white"
+                                                //     }
+                                                // }}
+                                                // InputProps={{
+                                                //     style: {
+                                                //         border: '1px solid #FF5000',
+                                                //         borderRadius: '2px',
+                                                //         height: '35px'
+                                                //     }
+                                                // }}
+                                            />
+                                             ) : field.sFieldCaption === "DisAmount" ? (
+                                                  <MDBInput
+                                                required
+                                                id="form3Example"
+                                                size="small"
+                                                value=''
+                                                readOnly
+                                                labelStyle={{ fontSize: '15px' }}
+                                                inputStyle={{
+                                                    border: 'none',
+                                                    backgroundColor: 'transparent',
+                                                    fontSize: '15px',
+                                                    paddingLeft: '8px',
+                                                    outline: 'none',
+                                                    width: '100%',
+                                                }}
+                                                InputLabelProps={{
+                                                    style: {
+                                                        fontSize: '15px',
+                                                        backgroundColor: "white"
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    style: {
+                                                        border: '1px solid #FF5000',
+                                                        borderRadius: '2px',
+                                                        height: '35px'
+                                                    }
+                                                }}
+                                            />
+                                            ) : field.sFieldCaption === "Vat" ? (
+                                                <TextField
+                                                variant="outlined"
+                                                size="small"
+                                                type="text"
+                                                
+                                                // value={formData[rowIndex].fRate || ''}
+                                                // onChange={(event) => handleRate(event, rowIndex)}
+                                                // InputLabelProps={{
+                                                //     style: {
+                                                //         fontSize: '15px',
+                                                //         backgroundColor: "white"
+                                                //     }
+                                                // }}
+                                                // InputProps={{
+                                                //     style: {
+                                                //         border: '1px solid #FF5000',
+                                                //         borderRadius: '2px',
+                                                //         height: '35px'
+                                                //     }
+                                                // }}
+                                            />
+                                            )  : field.sFieldCaption === "Remarks" ? (
+                                                <TextField
+                                                variant="outlined"
+                                                size="small"
+                                                type="text"
+                                                
+                                                // value={formData[rowIndex].fRate || ''}
+                                                // onChange={(event) => handleRate(event, rowIndex)}
+                                                // InputLabelProps={{
+                                                //     style: {
+                                                //         fontSize: '15px',
+                                                //         backgroundColor: "white"
+                                                //     }
+                                                // }}
+                                                // InputProps={{
+                                                //     style: {
+                                                //         border: '1px solid #FF5000',
+                                                //         borderRadius: '2px',
+                                                //         height: '35px'
+                                                //     }
+                                                // }}
+                                            />
+                                             )  : field.sFieldCaption === "Net" ? (
+                                                <MDBInput
+                                              required
+                                              id="form3Example"
+                                              size="small"
+                                              value=''
+                                              readOnly
+                                              labelStyle={{ fontSize: '15px' }}
+                                              inputStyle={{
+                                                  border: 'none',
+                                                  backgroundColor: 'transparent',
+                                                  fontSize: '15px',
+                                                  paddingLeft: '8px',
+                                                  outline: 'none',
+                                                  width: '100%',
+                                              }}
+                                              InputLabelProps={{
+                                                  style: {
+                                                      fontSize: '15px',
+                                                      backgroundColor: "white"
+                                                  }
+                                              }}
+                                              InputProps={{
+                                                  style: {
+                                                      border: '1px solid #FF5000',
+                                                      borderRadius: '2px',
+                                                      height: '35px'
+                                                  }
+                                              }}
+                                          />
+                                          )  : null}
                                             {newOpen && (
                                                 <Modal
                                                     isOpen={newOpen}

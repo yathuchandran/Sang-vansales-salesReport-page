@@ -167,7 +167,21 @@ export const GetDriver= async(payload)=>{
             console.error("GetSalesDetails", error);
           }
           }
-    
+
+
+        //  GetProductRate
+        export const GetProductRate= async(payload)=>{
+          try {
+            const response = await api.get("GetProductRate", {
+              params: payload,
+            });
+            return response;
+          } catch (error) {
+            console.error("GetProductRate", error.response.data.Status);
+            return error.response.data.Status;
+          }
+          }
+
 //POST METHORD LIKE THIS----------------------------------------------------------------------------------------------------------------------------
 export const DeleteAllTransactions= async(payload)=>{
 try {
@@ -228,71 +242,3 @@ export const UpsertProfile= async(data,payload)=>{
   return makeAuthorizedRequest("delete","Profile/DeleteProfile",payload);
  }
 
-
-
-///ROLE API HERE----------------------------------------------------------------------------------------------------------------------------------------
- 
- export const GetRoleSummary= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetRoleSummary",payload);
- }
-
- 
- export const GetProfiles= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetProfiles",payload);
- }
-
- 
- export const GetRoleProfile= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetRoleProfile",payload);
- }
- export const GetRoleDetails= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetRoleDetails",payload);
- }
- 
- export const GetRoleActions= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetActions",payload);
- }
-
- 
- export const GetMasters= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetMasters",payload);
- } 
- export const GetMasterData= async(data)=>{
-  return makeAuthorizedRequest("get",`Role/GetMasterData?masterId=${data.masterId}&searchCondition=${data.searchCondition}&typeId=${data.typeId}`);
- }
-
- export const GetEntryRestriction= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetEntryRestriction",payload);
- }
-
- export const GetTransactionRights= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/GetTransactionRights",payload);
- }
-
- export const UpsertRole= async(payload)=>{
-  return makeAuthorizedRequest("post","Role/UpsertRole",payload);
- }
- export const DeleteRole= async(payload)=>{
-  return makeAuthorizedRequest("get","Role/DeleteRole",payload);
- }
- 
-
-
-//Users------------------------------------------------------------------------------------------
-export const GetUserSummary= async(payload)=>{
-  return makeAuthorizedRequest("get","Users/GetUserSummary",payload);
- }
- export const GetRoles= async(payload)=>{
-  return makeAuthorizedRequest("get","Users/GetRoles",payload);
- }
- export const DeleteUser= async(payload)=>{
-  return makeAuthorizedRequest("delete","Users/DeleteUser",payload);
- }
-
- export const UpsertUser= async(payload)=>{
-  return makeAuthorizedRequest("post","Users/UpsertUser",payload);
- }
-
- export const GetUserDetails= async(payload)=>{
-  return makeAuthorizedRequest("get","Users/GetUserDetails",payload);
- }

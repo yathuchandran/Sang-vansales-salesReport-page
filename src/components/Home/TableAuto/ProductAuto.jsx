@@ -1,6 +1,6 @@
 import { Autocomplete, ListSubheader, TextField, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
-import { GetMasterData, GetMasters, GetProduct, GetWarehouse } from "../../../api/Api";
+import { GetProduct } from "../../../api/Api";
 
 export default function ProductAuto({
     value,

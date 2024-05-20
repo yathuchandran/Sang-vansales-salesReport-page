@@ -1,6 +1,6 @@
 import { Autocomplete, ListSubheader, TextField, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
-import { GetDriver, GetMasterData, GetMasters, GetOutlet, GetWarehouse } from "../../../api/Api";
+import {  GetOutlet } from "../../../api/Api";
 
 export default function OutletAuto({
     value,

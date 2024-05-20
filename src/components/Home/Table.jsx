@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 
 import MuiEditableTable from './MuiEditableTable';
-import RoleSummary from './tableees';
 
-function Body({outlet,warehouseId,setProductIds}) {
+function Body({outlet,warehouseId,setProductIds,outletid}) {
 
     
     const [selectedHeaderMain, setselectedHeaderMain] = useState("Main")
@@ -64,22 +63,22 @@ function Body({outlet,warehouseId,setProductIds}) {
   },
   {
     sFieldName:"Discount%",
-    sFieldCaption:"Discount%",
+    sFieldCaption:"Discount",
  
   },
   {
     sFieldName:"Dis Amount",
-    sFieldCaption:"Dis Amount",
+    sFieldCaption:"DisAmount",
  
  },
  {
   sFieldName:"Add Charges",
-  sFieldCaption:"Add Charges",
+  sFieldCaption:"AddCharges",
 
 },
 {
   sFieldName:"Vat%",
-  sFieldCaption:"Vat%",
+  sFieldCaption:"Vat",
 
 },
 {
@@ -112,7 +111,7 @@ const combinedBody = [...fixedFields]
       <div >
        
       {
-        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId} setProductIds={setProductIds}     />
+        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId} setProductIds={setProductIds}   outletid={outletid}  />
         // <RoleSummary />
       }
       

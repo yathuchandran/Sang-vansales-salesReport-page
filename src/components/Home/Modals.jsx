@@ -548,7 +548,6 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
         };
     };
 
-    console.log(Batch, ProductId, "ProductId",formDatass );
 
     const [open, setOpen] = useState(false);
     const [warning, setWarning] = useState(false);
@@ -557,7 +556,14 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
     const [iIds, setIids] = useState();
     const [reqQty, setReqQty] = useState(null);
     const [allocatedValue, setAllocatedValue] = useState(null);
+    const [fQuantity,setfQuantity] = useState(null);
+    const [item,setItem] = useState(null);
+    const [filteredReqQty, setFilteredReqQty] = useState([]);
+
+    console.log(filteredReqQty,"reqQty========================================");
+
     const modalStyle = { display: isOpen ? "block" : "none" };
+
 
     useEffect(() => {
         if (reqQty) {
@@ -582,28 +588,49 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
 
     // FIFO stock allocation function
     const handleFifo = () => {
-        let remainingQty = Qty; // Total quantity to be allocated
-        const updatedBatch = Batch.map((item) => {
-            let allocatedQty = 0;
-            if (item.fQty <= remainingQty) {
-                allocatedQty = item.fQty;
-                remainingQty -= item.fQty;
-            } else {
-                allocatedQty = remainingQty;
-                remainingQty = 0;
+        formDatass.forEach((item) => {
+            if (item.iProduct === item.iProduct) { // Assuming you meant to compare ProductId with iProduct
+
+              let remainingQty = item.fQty; // Total quantity to be allocated
+
+              const updatedBatch = Batch.map((item) => {
+
+                  let allocatedQty = 0;
+                  if (item.fQty <= remainingQty) {
+                      allocatedQty = item.fQty;
+                      remainingQty -= item.fQty;
+                  } else {
+                      allocatedQty = remainingQty;
+                      remainingQty = 0;
+                  }
+                  return {
+                      ...item,
+                      ReqQty: allocatedQty,
+                    //   fQty: item.fQty - allocatedQty
+                    fQty:  allocatedQty
+
+                  };
+              });
+              setBatch(updatedBatch);
+              setReqQty(updatedBatch)
+              setAllocatedStocks(updatedBatch.map(item => item.ReqQty)); // Update allocated stocks state
+              setAvailableStock(remainingQty); // Update available stock state
             }
-            return {
-                ...item,
-                ReqQty: allocatedQty,
-                fQty: item.fQty - allocatedQty
-            };
-        });
-        setBatch(updatedBatch);
-        setAllocatedStocks(updatedBatch.map(item => item.ReqQty)); // Update allocated stocks state
-        setAvailableStock(remainingQty); // Update available stock state
+          });
+       
     };
 
+    useEffect(() => {
+        formDatass.forEach((item) => {
+             setfQuantity(item.fQty)
+             setItem(item.Product)
+        
+        });
+      }, []);
+
+
     const handleAllClear = () => {
+        console.log(reqQty,"reqQty");
         const updatedReqQty = reqQty.map(item => {
             if (item.ReqQty) {
                 return { ...item, ReqQty: '' };
@@ -616,19 +643,18 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
 
     const handleLoad = (value, rowIndex) => {
         const updated = [...Batch];
-        updated[rowIndex].ReqQty = value;
+        updated[rowIndex].ReqQty = Number(value);
+
         setReqQty(updated);
 
         const allocatedValues = updated.map((item) => item.ReqQty);
-        console.log(allocatedValues);
-        const totalSum = allocatedValues.reduce((acc, val) => {
-            if (val.trim() !== '') {
-                return acc + parseInt(val);
-            } else {
-                return acc;
-            }
-        }, 0);
-        if (Number(value) > Qty) {
+        const getTotalSum = (values) => {
+            return values.reduce((acc, value) => acc + Number(value), 0);
+          };
+        
+          const totalSum = getTotalSum(allocatedValues);
+
+        if (Number(value) > fQuantity) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid Allocation',
@@ -640,7 +666,7 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
                 title: 'Invalid Stock',
                 text: 'The requested quantity exceeds available stock.',
             });
-        } else if (totalSum > Qty) {
+        } else if (totalSum > fQuantity) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Invalid Allocation',
@@ -653,10 +679,15 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
     };
 
     const handleloads = () => {
-        if (Qty !== allocatedValue) {
+        //for posting values-----------------------------------------------------------
+            const filtered = reqQty.filter(item => item.ReqQty > 0);
+            setFilteredReqQty(filtered);
+        
+
+        if (Number(fQuantity) !== Number(allocatedValue)) {
             Swal.fire({
                 icon: 'warning',
-                text: `Quantity ${Qty} and allocated ${allocatedValue} must be equal.`,
+                text: `Quantity ${fQuantity} and allocated ${allocatedValue} must be equal.`,
             });
         }
     };
@@ -717,7 +748,7 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
                                                 <div className="mb-3">
                                                     <MDBInput
                                                         label="Item"
-                                                        value={Product}
+                                                        value={item}
                                                         readOnly
                                                         labelStyle={{ fontSize: '15px' }}
                                                         inputStyle={{
@@ -735,7 +766,7 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
                                                 <div className="mb-3">
                                                     <MDBInput
                                                         label="Quantity"
-                                                        value={Qty}
+                                                        value={fQuantity}
                                                         readOnly
                                                         labelStyle={{ fontSize: '15px' }}
                                                         inputStyle={{

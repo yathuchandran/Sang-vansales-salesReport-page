@@ -78,6 +78,7 @@ function HSEreport({ data }) {
     const [warehouseId, setWarehouseId] = useState(0)
     const [productIDs, setProductIds] = useState(0);
 
+    console.log(outlet,"outlet==========outlet");
   
     const buttonStyle = {
         textTransform: "none", // Set text transform to none for normal case
@@ -637,7 +638,8 @@ function HSEreport({ data }) {
 
                     <EnhancedTable  outlet={outlet}
                     warehouseId={warehouseId}
-                    setProductIds={setProductIds}  />
+                    setProductIds={setProductIds} 
+                    outletid={outletid} />
 
              
                 </Box>

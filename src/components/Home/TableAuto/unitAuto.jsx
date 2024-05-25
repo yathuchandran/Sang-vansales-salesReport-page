@@ -45,7 +45,6 @@ export default function unitAutocomplete({
 
     }, [value]);
 
-
     useEffect(() => {
         const fetchData = async () => {
             handleOpen();
@@ -67,7 +66,7 @@ export default function unitAutocomplete({
 
         };
         fetchData();
-    }, [searchkey, iTypeF2ICP]);
+    }, [searchkey, iTypeF2ICP,ProductId]);
 
 
     const handleClose = () => {
@@ -185,7 +184,7 @@ export default function unitAutocomplete({
                             transform: "translate(10px, 0px) scale(1)",
                           },
                           "& .MuiInputBase-input": {
-                            zIndex:2,
+                            // zIndex:2,
                             fontSize: '0.75rem', // Adjust the font size of the input text
                           },
                           "& .MuiInputLabel-outlined": {

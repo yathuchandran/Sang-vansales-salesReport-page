@@ -63,6 +63,8 @@ function Header() {
   const handleClickEvent = async (menu) => {
     if (menu.iId == "17") {
       console.log(menu.iId,"handleClickEvent menu");
+      localStorage.setItem('menu', JSON.stringify(menu.iId));
+
       navigate("/Sales", { state: menu });
     } else if (menu.iId == "100") {
       navigate("/Settings", { state: menu });

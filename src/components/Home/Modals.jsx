@@ -533,7 +533,7 @@ const bodyData = [
     { sFieldName: "Req.Qty", sFieldCaption: "Req.Qty" },
 ];
 
-function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batch, setBatch, ProductId ,formDatass}) {
+function Modals({ isOpen, handleNewClose, mode,  formDataEdit, setBatchData, Batch, setBatch,formDatass}) {
     const getInitialFormData = () => {
         return {
             id: 0,
@@ -560,10 +560,12 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
     const [item,setItem] = useState(null);
     const [filteredReqQty, setFilteredReqQty] = useState([]);
 
-    console.log(filteredReqQty,"reqQty========================================");
+   useEffect(()=>{
+    setBatchData(filteredReqQty)
+   },[filteredReqQty])
 
     const modalStyle = { display: isOpen ? "block" : "none" };
-
+console.log(formDatass,"formDatass---------------------------------------------");
 
     useEffect(() => {
         if (reqQty) {
@@ -582,10 +584,7 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
         handleNewClose();
     };
 
-    const initialStock = 25;
-    const [availableStock, setAvailableStock] = useState(initialStock);
-    const [allocatedStocks, setAllocatedStocks] = useState([0, 0, 0]); // Assuming 3 rows for simplicity
-
+  
     // FIFO stock allocation function
     const handleFifo = () => {
         formDatass.forEach((item) => {
@@ -594,7 +593,6 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
               let remainingQty = item.fQty; // Total quantity to be allocated
 
               const updatedBatch = Batch.map((item) => {
-
                   let allocatedQty = 0;
                   if (item.fQty <= remainingQty) {
                       allocatedQty = item.fQty;
@@ -607,14 +605,21 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
                       ...item,
                       ReqQty: allocatedQty,
                     //   fQty: item.fQty - allocatedQty
-                    fQty:  allocatedQty
+                    // fQty:  allocatedQty
 
                   };
               });
+              const allocatedValues = updatedBatch.map((item) => item.ReqQty);
+              const getTotalSum = (values) => {
+                return values.reduce((acc, value) => acc + Number(value), 0);
+              };
+            
+              const totalSum = getTotalSum(allocatedValues);
+
               setBatch(updatedBatch);
               setReqQty(updatedBatch)
-              setAllocatedStocks(updatedBatch.map(item => item.ReqQty)); // Update allocated stocks state
-              setAvailableStock(remainingQty); // Update available stock state
+              
+              setAllocatedValue(totalSum);
             }
           });
        
@@ -630,7 +635,6 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
 
 
     const handleAllClear = () => {
-        console.log(reqQty,"reqQty");
         const updatedReqQty = reqQty.map(item => {
             if (item.ReqQty) {
                 return { ...item, ReqQty: '' };
@@ -681,7 +685,13 @@ function Modals({ isOpen, handleNewClose, mode, Product, formDataEdit, Qty, Batc
     const handleloads = () => {
         //for posting values-----------------------------------------------------------
             const filtered = reqQty.filter(item => item.ReqQty > 0);
-            setFilteredReqQty(filtered);
+            const updatedData = filtered.map((item) => ({
+                ...item,
+                iBatch: 0, // Set the initial value here, or leave it empty
+                iCondition:0,
+                bFoc:0,
+            }));
+            setFilteredReqQty(updatedData);
         
 
         if (Number(fQuantity) !== Number(allocatedValue)) {

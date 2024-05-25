@@ -238,8 +238,9 @@ function RoleSummary() {
     const navigate = useNavigate()
     //new--------------------------------------------------------------------------
     const location = useLocation();
-    const menuId = location.state?.iId;
+    // const menuId = location.state?.iId;
     const userId = localStorage.getItem("userId");
+    const menuId = localStorage.getItem("menu");
     const [displayLength, setdisplayLength] = React.useState(10);
     const [displayStart, setdisplayStart] = useState(0);
 
@@ -266,8 +267,7 @@ function RoleSummary() {
             iMaster: menuId,
             iDocType: 2,  // its is default value
             Search: ''
-        });
-
+        });                                                                                                                                                                                                                                                                                                 
         if (response?.status === 200) {
             setData(response.data);
 
@@ -523,7 +523,6 @@ function RoleSummary() {
 
                     }}
                 >
-
                     <>
                         <Stack direction="row"
                             spacing={1}
@@ -580,7 +579,6 @@ function RoleSummary() {
                                 Close
                             </Button>
                         </Stack>
-
                         <Paper
                             sx={{
                                 width: "100%",
@@ -589,7 +587,6 @@ function RoleSummary() {
                             }}>
 
                             <EnhancedTableToolbar
-
                                 numSelected={selected.length} // Provide the numSelected prop
                                 searchTerm={searchTerm}
                                 handleSearch={handleSearch}
@@ -632,6 +629,7 @@ function RoleSummary() {
                                                 const isItemSelected = isSelected(row.iTransId);
                                                 const labelId = `enhanced-table-checkbox-${index}`;
                                                 const handleRowDoubleClick = async (event, iTransId) => {
+                                                    navigate("/sale", { state: iTransId, selected:selected})
                                                     handleOpen();
                                                     setSelected([iTransId]);
                                                     handleClose();

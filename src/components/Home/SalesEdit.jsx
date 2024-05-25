@@ -21,7 +21,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 import {
     FormControl,
-   
+
 } from "@mui/material";
 
 import {
@@ -34,7 +34,7 @@ import {
 } from "mdb-react-ui-kit";
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DeleteAllTransactions, GetNextDocNo, GetPrev_NextDocNo, GetWarehouse, PostSales } from '../../api/Api';
+import { DeleteAllTransactions, GetNextDocNo, GetPrev_NextDocNo, GetSalesDetails, GetWarehouse, PostSales } from '../../api/Api';
 import AutoComplete3 from './AutoComplete/AutocmpltWarehouse';
 import SalesManAuto from './AutoComplete/SalesManAuto';
 import OutletAuto from './AutoComplete/outlet';
@@ -48,17 +48,11 @@ function HSEreport({ data }) {
     const day = String(currentDate.getDate()).padStart(2, "0");
     const formattedCurrentDate = `${year}-${month}-${day}`;
 
-    const tenDaysAgoDate = new Date();
-    tenDaysAgoDate.setDate(tenDaysAgoDate.getDate() + 0);
-    const tenDaysAgoYear = tenDaysAgoDate.getFullYear();
-    const tenDaysAgoMonth = String(tenDaysAgoDate.getMonth() + 1).padStart(2, "0");
-    const tenDaysAgoDay = String(tenDaysAgoDate.getDate()).padStart(2, "0");
-    const formattedTenDaysAgoDate = `${tenDaysAgoYear}-${tenDaysAgoMonth}-${tenDaysAgoDay}`;
-
-    const [saleManeId, setsaleManeId] = useState(0)
-    const [outletid, setoutletid] = useState(0)
-
    
+
+
+
+
 
 
     //new====================================================================================================================
@@ -66,20 +60,28 @@ function HSEreport({ data }) {
     const location = useLocation();
     const navigates = useNavigate()
     const PageName = location.state?.sName
-    const selected= location.state
-    const userId = localStorage.getItem("userId");
+    const selected = location.state ? location.state : 0;
 
+    const [trnsId,setTransId] = useState(selected )
+    const [selectTransid, setSlctTransId] = useState(selected)
+
+    const userId = localStorage.getItem("userId");
     const [docNum, setdocNum] = useState(null)
     const [warehouse, setWarehouse] = useState(0)
     const [saleMane, setsaleMane] = useState(0)
+    const [saleManeId, setsaleManeId] = useState(0)
+    const [outletid, setoutletid] = useState(0)
     const [outlet, setoutlet] = useState(0)
     const [narration, setNarration] = useState('')
     const [typess, setTypes] = useState(null)
     const [warehouseId, setWarehouseId] = useState(0)
     const [productIDs, setProductIds] = useState(0);
+    const [bodyData, setBodyData] = useState("")
+    const [batchData, setBatchData] = useState("")
+    const [tableData, setTableData] = useState('')
+    const [newValue, setNewValue] = useState(false)
 
-    console.log(outlet,"outlet==========outlet");
-  
+
     const buttonStyle = {
         textTransform: "none", // Set text transform to none for normal case
         color: `${secondaryColorTheme}`, // Set text color
@@ -87,7 +89,7 @@ function HSEreport({ data }) {
         boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.3)",
     };
 
-  
+
 
     //API DATA CALLING USEEFECT-------------------------------------------------------------------------------------
     useEffect(() => {
@@ -112,7 +114,7 @@ function HSEreport({ data }) {
     // const getInitialFormData = () => {
 
 
-   
+
 
     //     return {
     //         DisplayLength: displayLength,
@@ -283,18 +285,29 @@ function HSEreport({ data }) {
 
     //GetPrev_NextDocNo================================================================
     const GetPrev_NextDocNos = async (id) => {
-        console.log(id, "typess");
+        console.log(id,trnsId, "typess");
         try {
             const response = await GetPrev_NextDocNo({
-                iTransId: 3,
+                iTransId: trnsId,
                 iDoctype: 2,
                 iType: id,
             })
             const data = JSON.parse(response?.data.ResultData).Table
-            console.log(data,"====================================================");
+            console.log(data, "=======GetPrev_NextDocNos ============================================== ");
             const docNo = data.map((item) => item.sDocNo)
-            console.log(data, "respons");
-            setdocNum(docNo.join())
+            const iTransId = data.map((item) => item.iTransId)
+            if (data.length > 0) {
+                setdocNum(docNo.join())
+                setSlctTransId(iTransId.join())
+                setTransId(iTransId.join())
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Warning',
+                    text: 'End of  Data  ',
+                });
+            }
+
 
         } catch (error) {
             console.log("GetPrev_NextDocNos", error);
@@ -316,7 +329,8 @@ function HSEreport({ data }) {
             });
             if (shouldDelete.isConfirmed) {
                 const res = await DeleteAllTransactions({
-                    iTransId: data12,
+                    // iTransId: data12,
+                    iTransId:trnsId,
                     iUser: userId,
                     iMaster: 17,
                     iDocType: 2
@@ -336,45 +350,135 @@ function HSEreport({ data }) {
     }
 
 
-    const handleSave=async()=>{
+    useEffect(() => {
+        const details = async () => {
+            try {
+                const response = await GetSalesDetails({
+                    // iTransId: 
+                    iTransId:trnsId,
+                })
+                const head = JSON.parse(response.data.ResultData).Table
+                const body = JSON.parse(response.data.ResultData).Table1
+                const batch = JSON.parse(response.data.ResultData).Table2
+                setTableData(body)
+                console.log(head, "--------", body, "--------------", batch, "respons");
+                const headData = head[0];
+                const [day, month, year] = headData.sDate.split('-');
+                const formattedDate = `${year}-${month}-${day}`;
+
+                setDate(formattedDate);
+
+                setoutlet(headData.Outlet)
+                setoutletid(headData.iOutlet)
+                setWarehouseId(headData.iWarehouse)
+                setWarehouse(headData.Warehouse)
+                setsaleMane(headData.sDriver)
+                setsaleManeId(headData.iDriver)
+                setTypes(headData.iType_Sale)
+                setNarration(headData.sNarration)
+                setTransId(headData.iTransId)
+                setdocNum(headData.sDocNo)
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        details()
+    }, [selectTransid, selected ,trnsId])
+
+    const handleNew = async () => {
+        setBatchData("")
+        setBodyData("")
+        setWarehouseId('')
+        // setdocNum('')
+        setWarehouse('')
+        setsaleMane('')
+        setoutlet('')
+        setNarration('')
+        setTypes('')
+        setProductIds('')
+        setoutletid('')
+
+        setNewValue(true)
+        setTransId(0)
+    }
+
+
+    const handleSave = async () => {
         try {
             const formData = {
-                iTransId: selected,
-                sDocNo: docNum,
+                // iTransId: selected,
+                iTransId: trnsId,
+                sDocNo: docNum.join(''),
                 sDate: curDates,
                 iDocType: 2,
                 iOutlet: outletid,
                 sNarration: narration,
                 iWarehouse: warehouseId,
-                iUser: userId,
-                iType_Sale: typess,
+                iUser: Number(userId),
+                iType_Sale: Number(typess),
                 iDriver: saleManeId,
-                Body: [{
-                    iProduct: productIDs
-                }]
+                Body: 
+                    bodyData.map(item => ({
+                        iProduct: item.iProduct,
+                        fQty: item.fQty,
+                        fFreeQty: item.fFreeQty,
+                        fRate: item.fRate,
+                        fDiscPerc: item.fDiscPerc,
+                        fDiscAmt: item.fDiscAmt,
+                        fAddCharges: item.fAddCharges,
+                        fVatPer: item.fVatPer,
+                        fVAT: item.fVAT,
+                        fExciseTaxPer: item.fExciseTaxPer,
+                        sRemarks: item.sRemarks,
+                        iUnit: item.iUnit,
+                        fNet: item.fNet,
+                        Batch: item.batch.map(batchItem => ({
+                            iBatch: batchItem.iBatch,
+                            sBatch: batchItem.sBatchNo,
+                            fQty: batchItem.fQty,
+                            iCondition: batchItem.iCondition,
+                            bFoc: batchItem.bFoc
+                        }))
+                    }))
             };
-            
-            console.log(formData,"formdata================================================================");
-            // Now you can use the formData variable to access or manipulate this data.
-            
-            // const res= await PostSales({
-            //     iTransId:selected,
-            //     sDocNo:docNum,
-            //     sDate:curDates,
-            //     iDocType:2,
-            //     iOutlet:outletid,
-            //     sNarration:narration,
-            //     iWarehouse: warehouseId,
-            //     iUser:userId,
-            //     iType_Sale:typess,
-            //     iDriver:saleManeId,
-            //     Body:[{
-            //         iProduct:productIDs
-            //     }]
 
-            // })
+            // Now you can use the formData variable to access or manipulate this data.
+
+            const res = await PostSales(formData)
+
+            console.log(res.data.MessageDescription, "res===============================");
+            if (res.data.Status === "Success") {
+                Swal.fire({
+                    title: `${res.data.MessageDescription}`,
+                    // text: "Dates cannot be in the future",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                });
+                setBatchData("")
+        setBodyData("")
+        setWarehouseId('')
+        // setdocNum('')
+        setWarehouse('')
+        setsaleMane('')
+        setoutlet('')
+        setNarration('')
+        setTypes('')
+        setProductIds('')
+        setoutletid('')
+        setTransId(0)
+        setNewValue(true)
+            } else {
+                Swal.fire({
+                    title: `${res.data.MessageDescription}`,
+                    // text: "Dates cannot be in the future",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+
+
         } catch (error) {
-            console.log("PostSales",error);
+            console.log("PostSales", error);
         }
     }
 
@@ -424,7 +528,7 @@ function HSEreport({ data }) {
                             </Box>
                             <Box sx={{ display: 'flex', gap: '9px' }}>
                                 <Button
-                                    // onClick={handleNew}
+                                    onClick={handleNew}
                                     variant="contained"
                                     startIcon={<AddIcon />}
                                     style={buttonStyle}
@@ -545,7 +649,7 @@ function HSEreport({ data }) {
                                                     id={`form3Example`}
                                                     type="date"
                                                     size="small"
-                                                   
+
                                                     label="Date"
                                                     value={curDates}
                                                     onChange={(e) => setDate(e.target.value)}
@@ -554,13 +658,13 @@ function HSEreport({ data }) {
                                                     onFocus={(e) => e.target.showPicker?.()} // Fallback for when the field is focused
                                                     labelStyle={{
                                                         fontSize: '15px',
-                                                        backgroundColor:"white"
+                                                        backgroundColor: "white"
                                                     }}
                                                     style={{
                                                         border: '2px solid #FF5000',
                                                         // outline: 'none', // Optional: Removes the default outline
                                                     }}
-                                                   
+
                                                 />
 
                                             </div>
@@ -614,8 +718,7 @@ function HSEreport({ data }) {
                                         <MDBCol lg="3" md="4" sm="6" xs="12">
                                             <div className="mb-3">
                                                 <FormControl alignItems="start">
-                                                    <FormLabel alignItems="start" id="demo-row-radio-buttons-group-label"
-                                                    >Types</FormLabel>
+                                                   
                                                     <RadioGroup
                                                         row
                                                         aria-labelledby="demo-row-radio-buttons-group-label"
@@ -623,6 +726,8 @@ function HSEreport({ data }) {
                                                         value={typess}
                                                         onChange={handleRadioChange}
                                                     >
+                                                         <FormLabel alignItems="start" id="demo-row-radio-buttons-group-label"
+                                                    >Types</FormLabel>
                                                         <FormControlLabel value="1" control={<Radio />} label="Cash" />
                                                         <FormControlLabel value="2" control={<Radio />} label="Credit" />
                                                     </RadioGroup>
@@ -636,12 +741,19 @@ function HSEreport({ data }) {
                         </form>
                     </Box>
 
-                    <EnhancedTable  outlet={outlet}
-                    warehouseId={warehouseId}
-                    setProductIds={setProductIds} 
-                    outletid={outletid} />
+                    <EnhancedTable outlet={outlet}
+                        warehouseId={warehouseId}
+                        setProductIds={setProductIds}
+                        outletid={outletid}
+                        setBodyData={setBodyData}
+                        setBatchData={setBatchData}
+                        tableData={tableData}
+                        newValue={newValue}
+                        setNewValue={setNewValue}
+                        trnsId={trnsId}
+                    />
 
-             
+
                 </Box>
             </>
         </div >

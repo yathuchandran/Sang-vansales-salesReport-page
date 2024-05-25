@@ -186,7 +186,7 @@ export default function OutletAuto({
                             transform: "translate(10px, 0px) scale(1)",
                           },
                           "& .MuiInputBase-input": {
-                            zIndex:2,
+                            // zIndex:2,
                             fontSize: '0.75rem', // Adjust the font size of the input text
                           },
                           "& .MuiInputLabel-outlined": {

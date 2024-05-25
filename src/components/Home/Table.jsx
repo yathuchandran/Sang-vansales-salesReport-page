@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import MuiEditableTable from './MuiEditableTable';
 
-function Body({outlet,warehouseId,setProductIds,outletid}) {
+function Body({outlet,warehouseId,setProductIds,outletid,setBodyData,setBatchData,tableData,newValue,setNewValue,trnsId}) {
 
     
     const [selectedHeaderMain, setselectedHeaderMain] = useState("Main")
@@ -100,18 +100,13 @@ const combinedBody = [...fixedFields]
     style={{justifyContent: "center", 
     alignItems: "center" 
 }}>
-    {/* <div className="CLTCS2D1">
-
-      <div onClick={()=>headerSelection("Main")}  className={selectedHeaderMain === "Main"?"CLTCS2D1D1":"CLTCS2D1D2"}>Main</div>
-      <div onClick={()=>headerSelection("Attachments")} className={selectedHeaderMain === "Attachments"?"CLTCS2D1D1":"CLTCS2D1D2"}>Attachments</div>
-
-    </div> */}
+   
     {
       selectedHeaderMain ==="Main" &&
       <div >
        
       {
-        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId} setProductIds={setProductIds}   outletid={outletid}  />
+        <MuiEditableTable bodyData={combinedBody} outlet={outlet} warehouseId={warehouseId} setProductIds={setProductIds}   outletid={outletid} setBodyData={setBodyData} setBatchData={setBatchData} tableData={tableData}  newValue={newValue} setNewValue={setNewValue} trnsId={trnsId} />
         // <RoleSummary />
       }
       

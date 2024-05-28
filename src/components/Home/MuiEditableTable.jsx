@@ -11,16 +11,16 @@ import AutoComplete3 from './AutoComplete/AutocmpltWarehouse';
 import ProductAuto from './TableAuto/ProductAuto';
 import UnitAutocomplete from './TableAuto/unitAuto';
 import Swal from "sweetalert2";
-import { GetProductRate, GetSalesBal_Qty, GetSalesBatch } from '../../api/Api';
+import { GetProductRate, GetProduct_vat, GetSalesBal_Qty, GetSalesBatch } from '../../api/Api';
 import Modals from './Modals';
 import { MDBInput } from 'mdb-react-ui-kit';
 import { buttonColor1 } from '../../config';
 
 const initialRows = [
-    { id: 1, Product: '', iProduct: '', Unit: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '',fTotalQty:'' }
+    { id: 1, Product: '', iProduct: '', Unit: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '', fTotalQty: '' }
 ];
 
-const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outletid,setBodyData,setBatchData,tableData ,newValue,setNewValue,trnsId}) => {
+const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outletid, setBodyData, setBatchData, tableData, newValue, setNewValue, trnsId }) => {
     const [rows, setRows] = useState(initialRows);
     const [selected, setSelected] = useState([]);
     const [formData, setFormData] = useState(initialRows);
@@ -34,52 +34,53 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
     const [gross, setGross] = useState(null);
     const [DiscountAmount, setDiscountAmount] = useState(null);
     const [Discount, setDiscount] = useState(null);
+    const [availqty,setAvailqty] = useState(0)
 
-    useEffect(()=>{
-        if (newValue===true) {
+    useEffect(() => {
+        if (newValue === true) {
             setFormData(initialRows)
         }
         setNewValue(false)
-    },[newValue])
+    }, [newValue])
 
     useEffect(() => {
         if (Array.isArray(tableData) && tableData.length > 0) {
-          const updatedFormData = tableData.map(data => ({
-            Batch: data.bBatch ? "BatchValue" : "", // Assuming you have a way to determine the batch value
-            Gross: "", // Set this based on your logic
-            Product: data.sProduct,
-            TotalQty: "", // Set this based on your logic
-            Unit: data.Unit,
-            fAddCharges: data.fAddCharges,
-            fDiscAmt: data.fDiscAmt,
-            fDiscPerc: data.fDiscPerc,
-            fExciseTaxPer: data.fExciseTaxPer,
-            fFreeQty: "", // Set this based on your logic
-            fNet: data.fNet,
-            fQty: data.fQty,
-            fRate: data.fRate,
-            fVAT: data.fVAT,
-            fVatPer: data.fVatPer,
-            iBatch: "", // Assuming you have a way to determine the batch id
-            iProduct: data.iProduct,
-            iUnit: data.iUnit,
-            id: data.iTransId, // Or another unique identifier
-            sRemarks: data.sRemarks,
-            bBatch:data.bBatch
-          }));
-          setFormData(updatedFormData);
+            const updatedFormData = tableData.map(data => ({
+                Batch: data.bBatch ? "BatchValue" : "", // Assuming you have a way to determine the batch value
+                Gross: "", // Set this based on your logic
+                Product: data.sProduct,
+                TotalQty: "", // Set this based on your logic
+                Unit: data.Unit,
+                fAddCharges: data.fAddCharges,
+                fDiscAmt: data.fDiscAmt,
+                fDiscPerc: data.fDiscPerc,
+                fExciseTaxPer: data.fExciseTaxPer,
+                fFreeQty: "", // Set this based on your logic
+                fNet: data.fNet,
+                fQty: data.fQty,
+                fRate: data.fRate,
+                fVAT: data.fVAT,
+                fVatPer: data.fVatPer,
+                iBatch: "", // Assuming you have a way to determine the batch id
+                iProduct: data.iProduct,
+                iUnit: data.iUnit,
+                id: data.iTransId, // Or another unique identifier
+                sRemarks: data.sRemarks,
+                bBatch: data.bBatch
+            }));
+            setFormData(updatedFormData);
         }
-      }, [tableData]);
+    }, [tableData]);
 
       console.log(formData,  tableData,"-formData---------------------------------------------------------------------------------------",  tableData,);
     useEffect(() => {
         setProductIds(formData.ProductId || null);
-        setBodyData(formData||null)
-    }, [formData.ProductId,formData]);
+        setBodyData(formData || null)
+    }, [formData.ProductId, formData]);
 
 
     const handleAddRow = (rowIndex) => {
-        const newRow = { id: generateNewId(), iProduct: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '' ,fTotalQty:''};
+        const newRow = { id: generateNewId(), iProduct: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '', fTotalQty: '' };
         const newRows = [...rows.slice(0, rowIndex + 1), newRow, ...rows.slice(rowIndex + 1)];
         const newFormData = [...formData.slice(0, rowIndex + 1), newRow, ...formData.slice(rowIndex + 1)];
         setFormData(newFormData);
@@ -141,7 +142,7 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
 
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
- 
+
     const handleCellChange = (value, rowIndex, columnId) => {
         const newRows = rows.map((row, index) => {
             if (index === rowIndex) {
@@ -160,10 +161,9 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
     };
 
 
-    const handleProduct = async(obj, rowIndex) => {
-        console.log(trnsId," handleProduct CALLING FOR PRODUCT OR NOT ---------------");
-
-        console.log(obj, rowIndex);
+    const handleProduct = async (obj, rowIndex) => {
+const prdctid= obj.iId
+        console.log(prdctid,obj, rowIndex);
         const newFormData = formData.map((row, index) => {
             if (index === rowIndex) {
                 return { ...row, iProduct: obj.iId, Product: obj.sName };
@@ -186,7 +186,6 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
                 ...item,
                 ReqQty: "", // Set the initial value here, or leave it empty
             }));
-    console.log(datas,"API CALLING BATCHABLE OR NOT ---------------");
             // Update the formData with the batch data for the corresponding row index
             const updatedFormData = newFormData.map((row, index) => {
                 if (index === rowIndex) {
@@ -194,18 +193,34 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
                 }
                 return row;
             });
-    
             setFormData(updatedFormData);
 
+
+            const response =await GetProduct_vat({
+                iProduct:prdctid
+            })
+            const ProductEXR = JSON.parse(response?.data.ResultData);
+            const  fVatPer=ProductEXR.map((item) => (item.fVatPer)).join()
+            const  fExciseTaxPer=ProductEXR.map((item) => (item.fTaxper)).join()
+            console.log(fExciseTaxPer,"fExciseTaxPer");
+            const updatedFormDataS = updatedFormData.map((row, index) => {
+                if (index === rowIndex) {
+                    return { ...row, fVatPer: fVatPer,fExciseTaxPer:fExciseTaxPer }; 
+                }
+                return row;
+            });
+            setFormData(updatedFormDataS);
+
         } catch (error) {
-            console.log("GetSalesBatch", error);
+            console.log( error);
         }
+
 
     };
 
 
 
-    
+
     const handleUnit = async (obj, rowIndex) => {
         const newFormData = formData.map((row, index) => {
             if (index === rowIndex) {
@@ -216,8 +231,8 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
         setFormData(newFormData);
         try {
             const response = await GetProductRate({
-                iProductId:  newFormData[rowIndex].iProduct,
-                iUnitId:  newFormData[rowIndex].iUnit, 
+                iProductId: newFormData[rowIndex].iProduct,
+                iUnitId: newFormData[rowIndex].iUnit,
                 iOutletId: outletid,
             })
 
@@ -230,10 +245,10 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
             } else {
                 const datas = JSON.parse(response?.data.ResultData);
                 const updatedFormData = newFormData.map((row, index) => {
-                    var gross=row.fQty*datas[0].fRate
+                    var gross = row.fQty * datas[0].fRate
                     console.log(gross);
                     if (index === rowIndex) {
-                        return { ...row, fRate: datas[0].fRate, Gross:gross };
+                        return { ...row, fRate: datas[0].fRate, Gross: gross };
                     }
                     return row;
                 });
@@ -245,23 +260,23 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
         }
     };
 
-    const handleBlur=(event,rowIndex)=>{
-        const qty=event.target.value
-const newFormData = formData.map((row, index) => {
+    const handleBlur = (event, rowIndex) => {
+        const qty = event.target.value
+        const newFormData = formData.map((row, index) => {
 
-    const gross=qty*row.fRate
+            const gross = qty * row.fRate
 
-    if (index === rowIndex) {
-        return { ...row, Gross:gross  };
-    }
-    return row;
-});
-setFormData(newFormData);
+            if (index === rowIndex) {
+                return { ...row, Gross: gross };
+            }
+            return row;
+        });
+        setFormData(newFormData);
     }
 
     const handleQuantity = async (event, rowIndex) => {
         const typedValue = event.target.value;
-        console.log(typedValue,"typedValue-------------------------",formData[rowIndex].fQty);
+        console.log(typedValue, "typedValue-------------------------", formData[rowIndex].fQty);
 
         try {
             const response = await GetSalesBal_Qty({
@@ -272,12 +287,12 @@ setFormData(newFormData);
             const data = JSON.parse(response?.data.ResultData).Table;
             const fQty = data.map((item) => item.fQty).join();
 
-const Batchs=formData[rowIndex].batch
-            
+            const Batchs = formData[rowIndex].batch
+
             if (Batchs && Batchs.length > 0) {
                 const fQtys = Batchs.map((item) => item.fQty);
                 const sum = fQtys.reduce((total, currentValue) => total + currentValue, 0);
-
+setAvailqty(Number(sum))
                 if (Number(typedValue) <= Number(sum)) {
                     setFormData(formData.map((row, index) => {
                         if (index === rowIndex) {
@@ -316,38 +331,41 @@ const Batchs=formData[rowIndex].batch
         const typedValue = event.target.value;
 
         if (Number(typedValue) <= Number(formData[rowIndex].fQty)) {
-            console.log(typedValue,"typedValue-------------------------",formData[rowIndex].fQty);
-
-            // setFormData(formData.map((row, index) => {
-            //     if (index === rowIndex) {
-            //         return { ...row, fFreeQty: typedValue };
-            //     }
-            //     return row;
-            // }));
+            const checkValue = Number(typedValue) + Number(formData[rowIndex]?.fQty || 0);
+            if (Number(checkValue) <= availqty) {
+            console.log(typedValue, "typedValue-------------------------", formData[rowIndex].fQty);
             const newFormData = formData.map((row, index) => {
                 if (index === rowIndex) {
                     return { ...row, fFreeQty: typedValue };
                 }
                 return row;
             });
-    
+
             // Calculate the new total quantity
             const newTotal = newFormData.reduce((total, row, index) => {
                 const rowQty = Number(row.fQty) || 0;
                 const rowFreeQty = Number(row.fFreeQty) || 0;
                 return total + rowQty + rowFreeQty;
             }, 0);
-    
+
             console.log(newTotal, "newTotal-------------------------");
-    
+
             const updatedFormData = newFormData.map((row, index) => {
                 if (index === rowIndex) {
                     return { ...row, fTotalQty: newTotal };
                 }
                 return row;
             });
-    
+
             setFormData(updatedFormData);
+        }
+        else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: `Should be less than Qty ${availqty}`,
+            });
+        }
         } else {
             Swal.fire({
                 icon: 'warning',
@@ -355,41 +373,11 @@ const Batchs=formData[rowIndex].batch
                 text: `Should be less than Qty ${formData[rowIndex].fQty}`,
             });
         }
-  
+
 
     };
 
 
-    //HANDLE BATCH===================================================================================
-
-    // useEffect(() => {
-    //     const handleBatch = async () => {
-    //         try {
-    //             const response = await GetSalesBatch({
-    //                 iProduct: formData[rowIndex].iProduct,
-    //                 iTransId: iTransId,
-    //                 iWarehouse: warehouseId,
-    //             });
-    //             const data = JSON.parse(response?.data.ResultData);
-    //             const updatedData = data.map((item) => ({
-    //                 ...item,
-    //                 ReqQty: "", // Set the initial value here, or leave it empty
-    //             }));
-    //             setBatch(updatedData);
-    //         } catch (error) {
-    //             console.log("GetSalesBatch", error);
-    //         }
-    //     };
-
-    //     handleBatch();
-    // }, [formData[rowIndex].iProduct, warehouseId]);
-
-    //===================================================================================
-
-    // useEffect(() => {
-    //     const newTotal = Number(formData.fQty || 0) + Number(formData.fFreeQty || 0);
-    //     setTotalQuantity(newTotal);
-    // }, [formData.fQty, formData.fFreeQty]);
 
     useEffect(() => {
         const newTotal = Number(formData.reduce((total, row) => total + (Number(row.fQty) || 0), 0)) +
@@ -436,20 +424,27 @@ const Batchs=formData[rowIndex].batch
     //handlefAddCharges-----------------------------------------------------------------
     const handlefAddCharges = async (event, rowIndex) => {
         const typedValue = event.target.value;
-        var vatPercentage = 0;
-        var exVatPercentage = 0;
-        var calculatedDiscountAmount =  formData[rowIndex].Gross* (formData[rowIndex].fDiscPerc / 100);
+        var vatPercentage = Number(formData[rowIndex].fVatPer)|| 0;
+        var exVatPercentage = Number(formData[rowIndex].fExciseTaxPer)|| 0;
+
+var Gross1=Number(formData[rowIndex].Gross)||0;
+var discountPercentage=Number(formData[rowIndex].fDiscPerc)||0;
+console.log(vatPercentage,exVatPercentage,"exVatPercentage",Gross1,"Gross1",discountPercentage,"discountPercentage");
+
+
+        var calculatedDiscountAmount = Gross1 * (discountPercentage / 100);
         var fDiscAmt = Number(formData[rowIndex].fDiscAmt) || 0;
         var calculatedDiscountAmount = Number(calculatedDiscountAmount) || 0;
         setDiscountAmount(calculatedDiscountAmount)
-        
+
         var totalDiscount = fDiscAmt + calculatedDiscountAmount;
         setDiscount(totalDiscount)
 
-        // var vat = (gross + fDiscAmt - totalDiscount) * (vatPercentage / 100);
-        // var net = gross - totalDiscount + fDiscAmt + vat + exVatPercentage;
-        var vat = ( formData[rowIndex].Gross + fDiscAmt - totalDiscount)
-        var net =  formData[rowIndex].Gross - totalDiscount + fDiscAmt + vat
+        var vat = (Gross1 + fDiscAmt - totalDiscount) * (vatPercentage / 100);
+        var net = Gross1 - totalDiscount + fDiscAmt + vat + exVatPercentage;
+
+        // var vat = (formData[rowIndex].Gross + fDiscAmt - totalDiscount)
+        // var net = formData[rowIndex].Gross - totalDiscount + fDiscAmt + vat
         setFormData(formData.map((row, index) => {
             if (index === rowIndex) {
                 return { ...row, fAddCharges: typedValue, fNet: net, fVatPer: vat };
@@ -473,7 +468,7 @@ const Batchs=formData[rowIndex].batch
     // TABLE total ALL  value ---------------------------------------------------------------
     const sumFNet = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.fNet || 0);
-    }, 0);  
+    }, 0);
 
     const sumFQty = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.fQty);
@@ -486,9 +481,15 @@ const Batchs=formData[rowIndex].batch
     const sumAddchrg = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.fAddCharges);
     }, 0);
+    const TotExcise = formData.reduce((accumulator, currentValue) => {
+        return accumulator + parseFloat(currentValue.fExciseTaxPer);
+    }, 0);
+    const TotVat = formData.reduce((accumulator, currentValue) => {
+        return accumulator + parseFloat(currentValue.fVAT);
+    }, 0);
 
     const handleButtonClick = (batch) => {
-setBatch(batch)
+        setBatch(batch)
         setnewOpen(true);
         setMode("new");
     };
@@ -519,20 +520,20 @@ setBatch(batch)
     };
 
     const handleLoadClick = (inputValue) => {
-        console.log(inputValue,"------------input");
-            let remainingQty=inputValue
+        console.log(inputValue, "------------input");
+        let remainingQty = inputValue
 
-            const updated = formData.map((item) => {
-                console.log(item.Gross,"=");
+        const updated = formData.map((item) => {
+            console.log(item.Gross, "=");
 
-                let allocatedQty = 0;
-                if (remainingQty >item.Gross) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'The amount is not applicable to any row.',
-                    });
-                                }else
+            let allocatedQty = 0;
+            if (remainingQty > item.Gross) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'The amount is not applicable to any row.',
+                });
+            } else
                 if (item.Gross <= remainingQty) {
                     allocatedQty = item.Gross;
                     remainingQty -= item.Gross;
@@ -540,17 +541,17 @@ setBatch(batch)
                     allocatedQty = remainingQty;
                     remainingQty = 0;
                 }
-                console.log(allocatedQty);
+            console.log(allocatedQty);
 
-                return {
-                    ...item,
-                    fAddCharges: allocatedQty,
-                  //   fQty: item.fQty - allocatedQty
+            return {
+                ...item,
+                fAddCharges: allocatedQty,
+                //   fQty: item.fQty - allocatedQty
                 //   fQty:  allocatedQty
 
-                };
-            })
-            console.log(updated,"updated--------------------------");
+            };
+        })
+        console.log(updated, "updated--------------------------");
         // Perform actions with inputValue
         setIsModalOpens(false);
     };
@@ -624,14 +625,14 @@ setBatch(batch)
                                         size='small'
                                         onChange={(e) => setInputValue(e.target.value)}
                                     />
-                                    <Button variant="contained" color="primary" onClick={() =>handleLoadClick(inputValue)}>
+                                    <Button variant="contained" color="primary" onClick={() => handleLoadClick(inputValue)}>
                                         Load
                                     </Button>
                                     <Button variant="contained" color="secondary" onClick={handleCloseModals}>
                                         Close
                                     </Button>
                                 </div>
-                                
+
                             </Modal>
                         </TableRow>
                     </TableHead>
@@ -680,7 +681,7 @@ setBatch(batch)
                                             {field.sFieldCaption === "Product" ? (
                                                 outlet ? (
                                                     <ProductAuto
-                                                      
+
                                                         // value={formData[rowIndex].Product || ''}
                                                         value={row.Product || ''}
                                                         onChangeName={(obj) => handleProduct(obj, rowIndex)}
@@ -727,7 +728,7 @@ setBatch(batch)
                                                 )
                                             ) : field.sFieldCaption === "Batch" ? (
                                                 // formData[rowIndex].batch &&formData[rowIndex].batch.length > 0 ? (
-                                                    row.batch && row.batch.length > 0 ? (
+                                                row.batch && row.batch.length > 0 ? (
                                                     <Button onClick={(event) => handleButtonClick(row.batch)}>
                                                         Select Batch
                                                     </Button>
@@ -775,7 +776,7 @@ setBatch(batch)
                                                     id="form3Example"
                                                     size="small"
                                                     value={row.fTotalQty || ''}
-                                                                                                        // value={formData[rowIndex].fTotalQty || ''}
+                                                    // value={formData[rowIndex].fTotalQty || ''}
 
                                                     readOnly
                                                     labelStyle={{ fontSize: '15px' }}
@@ -829,7 +830,7 @@ setBatch(batch)
                                                     required
                                                     id="form3Example"
                                                     size="small"
-                                                    value=''
+                                                    value={row.fExciseTaxPer || ''}
                                                     readOnly
                                                     labelStyle={{ fontSize: '15px' }}
                                                     inputStyle={{
@@ -893,7 +894,7 @@ setBatch(batch)
                                                     value={row.fDiscPerc || ''}
                                                     // value={formData[rowIndex].fDiscPerc || ''}
                                                     onChange={(event) => handlefDiscPerc(event, rowIndex)}
-                                                
+
                                                 />
                                             ) : field.sFieldCaption === "DisAmount" ? (
                                                 <MDBInput
@@ -962,7 +963,7 @@ setBatch(batch)
                                                     required
                                                     id="form3Example"
                                                     size="small"
-                                                    value=''
+                                                    value={row.fVatPer || ''}
                                                     readOnly
                                                     labelStyle={{ fontSize: '15px' }}
                                                     inputStyle={{
@@ -995,7 +996,7 @@ setBatch(batch)
 
                                                     value={row.sRemarks || ''}
                                                     onChange={(event) => handlesRemarks(event, rowIndex)}
-                                                
+
                                                 />
                                             ) : field.sFieldCaption === "Net" ? (
                                                 <MDBInput
@@ -1081,16 +1082,16 @@ setBatch(batch)
                             Tot Gross: {sumgross}
                         </Typography>
                         <Typography variant="body1" sx={{ marginRight: "16px" }}>
-                            Tot Dis Amount:{DiscountAmount}
+                            Tot Dis Amount: {DiscountAmount}
                         </Typography>
                         <Typography variant="body1" sx={{ marginRight: "16px" }}>
                             Tot Add Chrge: {sumAddchrg}
                         </Typography>
                         <Typography variant="body1" sx={{ marginRight: "16px" }}>
-                            Tot Excise Tax: 0.00
+                            Tot Excise Tax: {TotExcise}
                         </Typography>
                         <Typography variant="body1" sx={{ marginRight: "16px" }}>
-                            Tot Vat: 0.00
+                            Tot Vat: {TotVat}
                         </Typography>
                     </Box>
                 )}

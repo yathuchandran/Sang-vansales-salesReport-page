@@ -267,7 +267,8 @@ function RoleSummary() {
             iMaster: menuId,
             iDocType: 2,  // its is default value
             Search: ''
-        });                                                                                                                                                                                                                                                                                                 
+        });  
+        console.log(response.data,"response.data=======================");                                                                                                                                                                                                                                                                                               
         if (response?.status === 200) {
             setData(response.data);
 
@@ -279,7 +280,7 @@ function RoleSummary() {
     };
     React.useEffect(() => {
         fetchData(); // Initial data fetch
-        setPage(0);
+        // setPage(0);
     }, [changesTriggered, searchKey,displayLength,displayStart]);
 
     
@@ -328,20 +329,23 @@ function RoleSummary() {
     };
 
     const handleChangePage = ( newPage) => {
+        console.log(newPage,"newPage=========");
+
         setPage(newPage);
         const newDisplayStart = newPage * rowsPerPage;
         handleDisplayStartChange(newDisplayStart);
     };
 
     const handleChangeRowsPerPage = (event) => {
-        fetchData(); // Initial data fetch
+        // fetchData(); // Initial data fetch
         const newRowsPerPage = parseInt(event.target.value, 10);
         setRowsPerPage(newRowsPerPage);
         setPage(0);
         const newDisplayStart = 0;
         handleDisplayStartChange(newDisplayStart);
         handleDisplayLengthChange(newRowsPerPage);
-        fetchData(); // Initial data fetch
+        console.log(newRowsPerPage,"newDisplayLength----");
+        // fetchData(); // Initial data fetch
 
     };
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -726,7 +730,7 @@ function RoleSummary() {
                                 </TableContainer>
                             )}
                             <TablePagination
-                                rowsPerPageOptions={[5, 10, 25]}
+                                rowsPerPageOptions={[10, 25, 50,100]}
                                 component="div"
                                 count={data && data.length > 0 ? data[0].totalRows : 0}
                                 rowsPerPage={rowsPerPage}
@@ -800,11 +804,14 @@ function RoleSummary() {
 const TablePaginationActions = (props) => {
     const { count, page, rowsPerPage, onPageChange } = props;
     // Calculate the last page index
+
     const lastPage = Math.ceil(count / rowsPerPage) - 1;
+
 
     // Generate page numbers: we want to show 2 pages on each side if possible
     const startPage = Math.max(0, page - 2); // Current page - 2, but not less than 0
     const endPage = Math.min(lastPage, page + 2); // Current page + 2, but not more than last page
+
 
     // Create an array of page numbers to be shown
     const pages = Array.from(
@@ -813,7 +820,6 @@ const TablePaginationActions = (props) => {
     );
 
     const handlePageButtonClick = (newPage) => {
-
         onPageChange(newPage);
     };
 

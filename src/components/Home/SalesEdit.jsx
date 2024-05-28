@@ -102,7 +102,7 @@ function HSEreport({ data }) {
                 })
                 const data = JSON.parse(response?.data.ResultData)
                 const docNo = data.map((item) => item.DocNo)
-                setdocNum(docNo)
+                setdocNum(docNo.join())
             } catch (error) {
                 console.log("GetNextDocNums", error);
 
@@ -293,11 +293,13 @@ function HSEreport({ data }) {
                 iType: id,
             })
             const data = JSON.parse(response?.data.ResultData).Table
-            console.log(data, "=======GetPrev_NextDocNos ============================================== ");
             const docNo = data.map((item) => item.sDocNo)
+            const singleString = docNo.join();
+                        console.log(singleString, "=======GetPrev_NextDocNos ============================================== ");
+
             const iTransId = data.map((item) => item.iTransId)
             if (data.length > 0) {
-                setdocNum(docNo.join())
+                setdocNum(singleString)
                 setSlctTransId(iTransId.join())
                 setTransId(iTransId.join())
             } else {
@@ -313,7 +315,6 @@ function HSEreport({ data }) {
             console.log("GetPrev_NextDocNos", error);
         }
     }
-
 
     const handleDelete = async () => {
         const data12 = selected
@@ -335,8 +336,12 @@ function HSEreport({ data }) {
                     iMaster: 17,
                     iDocType: 2
                 });
-                // Add success message here if needed
                 Swal.fire('Deleted!', 'The profile has been deleted.', 'success');
+
+                if (res.data.MessageDescription==="Deleted") {
+                    GetPrev_NextDocNos(1)
+                }
+                // Add success message here if needed
             }
             // fetchData(); // Initial data fetch
             // setchangesTriggered(true);
@@ -402,13 +407,53 @@ function HSEreport({ data }) {
         setTransId(0)
     }
 
+    console.log(docNum,"docNum 318");
 
     const handleSave = async () => {
+
+      
+        if (saleManeId===0) {
+            Swal.fire({
+                            title: "Error!",
+                            text: "Select a  Driver",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                        return;
+        }
+        if (warehouseId===0) {
+            Swal.fire({
+                            title: "Error!",
+                            text: "Select a  Warehouse",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                        return;
+        }
+        if (outletid===0) {
+            Swal.fire({
+                            title: "Error!",
+                            text: "Select a  outlet",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                        return;
+        }
+        if (Number(typess)===0) {
+            Swal.fire({
+                            title: "Error!",
+                            text: "Select a payment type Cash or Credit",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                        return;
+        }
+      
         try {
             const formData = {
                 // iTransId: selected,
                 iTransId: trnsId,
-                sDocNo: docNum.join(''),
+                sDocNo: docNum,
                 sDate: curDates,
                 iDocType: 2,
                 iOutlet: outletid,
@@ -418,7 +463,7 @@ function HSEreport({ data }) {
                 iType_Sale: Number(typess),
                 iDriver: saleManeId,
                 Body: 
-                    bodyData.map(item => ({
+                    bodyData?.map(item => ({
                         iProduct: item.iProduct,
                         fQty: item.fQty,
                         fFreeQty: item.fFreeQty,
@@ -432,7 +477,7 @@ function HSEreport({ data }) {
                         sRemarks: item.sRemarks,
                         iUnit: item.iUnit,
                         fNet: item.fNet,
-                        Batch: item.batch.map(batchItem => ({
+                        Batch: item.batch?.map(batchItem => ({
                             iBatch: batchItem.iBatch,
                             sBatch: batchItem.sBatchNo,
                             fQty: batchItem.fQty,
@@ -442,7 +487,9 @@ function HSEreport({ data }) {
                     }))
             };
 
-            // Now you can use the formData variable to access or manipulate this data.
+
+            
+console.log(formData,"formData post sale ");            // Now you can use the formData variable to access or manipulate this data.
 
             const res = await PostSales(formData)
 
@@ -478,7 +525,7 @@ function HSEreport({ data }) {
 
 
         } catch (error) {
-            console.log("PostSales", error);
+            console.log("PostSales---", error);
         }
     }
 

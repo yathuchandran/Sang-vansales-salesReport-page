@@ -168,6 +168,17 @@ export const GetDriver= async(payload)=>{
           }
           }
 
+          export const GetProduct_vat= async(payload)=>{
+            try {
+              const response = await api.get("GetProduct_vat", {
+                params: payload,
+              });
+              return response;
+            } catch (error) {
+              console.error("GetProduct_vat", error);
+            }
+            }
+
 
         //  GetProductRate
         export const GetProductRate= async(payload)=>{

@@ -268,7 +268,6 @@ function RoleSummary() {
             iDocType: 2,  // its is default value
             Search: ''
         });  
-        console.log(response.data,"response.data=======================");                                                                                                                                                                                                                                                                                               
         if (response?.status === 200) {
             setData(response.data);
 
@@ -329,8 +328,6 @@ function RoleSummary() {
     };
 
     const handleChangePage = ( newPage) => {
-        console.log(newPage,"newPage=========");
-
         setPage(newPage);
         const newDisplayStart = newPage * rowsPerPage;
         handleDisplayStartChange(newDisplayStart);
@@ -344,7 +341,6 @@ function RoleSummary() {
         const newDisplayStart = 0;
         handleDisplayStartChange(newDisplayStart);
         handleDisplayLengthChange(newRowsPerPage);
-        console.log(newRowsPerPage,"newDisplayLength----");
         // fetchData(); // Initial data fetch
 
     };

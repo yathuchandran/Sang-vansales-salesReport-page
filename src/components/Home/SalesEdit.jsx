@@ -109,137 +109,9 @@ function HSEreport({ data }) {
             }
         }
         GetNextDocNums()
-    }, [])
-
-    // const getInitialFormData = () => {
+    }, [newValue])
 
 
-
-
-    //     return {
-    //         DisplayLength: displayLength,
-    //         DisplayStart: displayStart,
-    //         FromDate: formattedTenDaysAgoDate,
-    //         ToDate: formattedCurrentDate,
-    //         iProject: 0,
-    //         initiatedBy: 0,
-    //         iActionBy: 0,
-    //         iRisklevel: 0,
-    //         istatus: 0,
-    //         Search: ""
-    //     }
-    // };
-
-
-    // useEffect(() => {
-    //     handleOpen()
-    //     const newFormdata = {
-    //         DisplayLength: displayLength,
-    //         DisplayStart: displayStart,
-    //         FromDate: FromDate,
-    //         ToDate: TODate,
-    //         iProject: iProjects,
-    //         initiatedBy: intiate,
-    //         iActionBy: Action,
-    //         iRisklevel: riskLevel,
-    //         istatus: istatus,
-    //         Search: searchQuery,
-    //     }
-    //     handleClose()
-    //     // fetchData(newFormdata)
-    // }, [displayLength, displayStart, searchQuery])
-
-
-
-    // initialData SETTING FUNCTION-------------------------------------------
-    // const fetchData = async (initialData) => {
-    //     handleOpen()
-    //     try {
-    //         const res = await HSEReactReport({
-    //             DisplayLength: displayLength,
-    //             DisplayStart: displayStart,
-    //             FromDate: initialData.FromDate,
-    //             ToDate: initialData.ToDate,
-    //             iProject: initialData.iProject,
-    //             initiatedBy: initialData.initiatedBy,
-    //             iActionBy: initialData.iActionBy,
-    //             iRisklevel: initialData.iRisklevel,
-    //             istatus: initialData.istatus,
-    //             Search: initialData.Search,
-    //         });
-    //         setProjectLists(res);
-    //         handleClose()
-    //     } catch (error) {
-    //         console.log(error);
-    //         handleClose()
-    //     }
-    // }
-
-
-
-    //FORM SUBMIT HANDLE SAVE FUNCTION-------------------------------
-    // const handleSave = async (e) => {
-    //     e.preventDefault();
-    //     const fromDate = new Date(FromDate);
-    //     const toDate = new Date(TODate);
-    //     const timeDiff = toDate.getTime() - fromDate.getTime();
-    //     const dayDiff = timeDiff / (1000 * 3600 * 24);
-
-    //     const today = new Date();
-    //     today.setHours(23, 59, 59, 999); // Set to the last moment of today
-
-    //     // Check if dates are in the future
-    //     if (fromDate > today || toDate > today) {
-    //         Swal.fire({
-    //             title: "Error!",
-    //             text: "Dates cannot be in the future",
-    //             icon: "error",
-    //             confirmButtonText: "OK",
-    //         });
-    //         return; // Stop execution if the date is in the future
-    //     }
-    //     if (!FromDate || !TODate) {
-    //         Swal.fire({
-    //             title: "Error!",
-    //             text: "Please Enter From Date & To Date",
-    //             icon: "error",
-    //             confirmButtonText: "OK",
-    //         });
-    //         return; // Stop execution if the date range is invalid
-    //     }
-    //     if (dayDiff < 0) {
-    //         Swal.fire({
-    //             title: "Error!",
-    //             text: "To Date should be greater than or equal to From Date",
-    //             icon: "error",
-    //             confirmButtonText: "OK",
-    //         });
-    //         return; // Stop execution if the date range is invalid
-    //     }
-
-
-    //     handleOpen()
-    //     try {
-    //         const res = await HSEReactReport({
-    //             DisplayLength: displayLength,
-    //             DisplayStart: displayStart,
-    //             FromDate: FromDate,
-    //             ToDate: TODate,
-    //             iProject: iProjects,
-    //             initiatedBy: intiate,
-    //             iActionBy: Action,
-    //             iRisklevel: riskLevel,
-    //             istatus: istatus,
-    //             Search: searchQuery
-    //         });
-    //         setProjectLists(res);
-
-    //         handleClose()
-    //     } catch (error) {
-    //         console.log(error);
-    //         handleClose()
-    //     }
-    // };
 
 
 
@@ -285,7 +157,6 @@ function HSEreport({ data }) {
 
     //GetPrev_NextDocNo================================================================
     const GetPrev_NextDocNos = async (id) => {
-        console.log(id,trnsId, "typess");
         try {
             const response = await GetPrev_NextDocNo({
                 iTransId: trnsId,
@@ -295,7 +166,6 @@ function HSEreport({ data }) {
             const data = JSON.parse(response?.data.ResultData).Table
             const docNo = data.map((item) => item.sDocNo)
             const singleString = docNo.join();
-                        console.log(singleString, "=======GetPrev_NextDocNos ============================================== ");
 
             const iTransId = data.map((item) => item.iTransId)
             if (data.length > 0) {
@@ -407,11 +277,10 @@ function HSEreport({ data }) {
         setTransId(0)
     }
 
-    console.log(docNum,"docNum 318");
 
     const handleSave = async () => {
-
-      
+        console.log(batchData,bodyData,"handleSave------------------------");
+//WARNGING ALERT MESSAGES----------------------------------------------------------
         if (saleManeId===0) {
             Swal.fire({
                             title: "Error!",
@@ -448,7 +317,7 @@ function HSEreport({ data }) {
                         });
                         return;
         }
-      
+
         try {
             const formData = {
                 // iTransId: selected,
@@ -467,6 +336,7 @@ function HSEreport({ data }) {
                         iProduct: item.iProduct,
                         fQty: item.fQty,
                         fFreeQty: item.fFreeQty,
+                        // fFreeQty: 4,
                         fRate: item.fRate,
                         fDiscPerc: item.fDiscPerc,
                         fDiscAmt: item.fDiscAmt,
@@ -477,19 +347,15 @@ function HSEreport({ data }) {
                         sRemarks: item.sRemarks,
                         iUnit: item.iUnit,
                         fNet: item.fNet,
-                        Batch: item.batch?.map(batchItem => ({
+                        Batch: Array.isArray(batchData) ? batchData.map(batchItem => ({
                             iBatch: batchItem.iBatch,
                             sBatch: batchItem.sBatchNo,
                             fQty: batchItem.fQty,
                             iCondition: batchItem.iCondition,
                             bFoc: batchItem.bFoc
-                        }))
+                        })) : [] // Ensure Batch is an empty array if batchData is not an array
                     }))
             };
-
-
-            
-console.log(formData,"formData post sale ");            // Now you can use the formData variable to access or manipulate this data.
 
             const res = await PostSales(formData)
 

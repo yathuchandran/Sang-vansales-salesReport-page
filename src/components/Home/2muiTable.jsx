@@ -35,7 +35,6 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
     const [DiscountAmount, setDiscountAmount] = useState(null);
     const [Discount, setDiscount] = useState(null);
     const [availqty, setAvailqty] = useState(0)
-const [selectedField,setSelectedField]= useState(null);
 
     const [nonbatchableProduct, setNonbatchableProduct] = useState([]);
 
@@ -46,7 +45,6 @@ const [selectedField,setSelectedField]= useState(null);
         setNewValue(false)
     }, [newValue])
 
-// EDIT CASE DATA FETCHING ---------------------------------------------------------------------------------------------------------------
     useEffect(() => {
         if (Array.isArray(tableData) && tableData.length > 0) {
             const updatedFormData = tableData.map(data => ({
@@ -68,12 +66,11 @@ const [selectedField,setSelectedField]= useState(null);
                 iBatch: "", // Assuming you have a way to determine the batch id
                 iProduct: data.iProduct,
                 iUnit: data.iUnit,
-                id: data.iTransDtId, // Or another unique identifier
+                id: data.iTransId, // Or another unique identifier
                 sRemarks: data.sRemarks,
                 bBatch: data.bBatch
             }));
             setFormData(updatedFormData);
-
         }
     }, [tableData]);
 
@@ -92,20 +89,12 @@ const [selectedField,setSelectedField]= useState(null);
     };
 
     const handleDeleteRow = (rowId) => {
-        console.log(rowId,"handleDeleteRow",rows,formData);
-
-        if (formData.length > 1) {
+        if (rows.length > 1) {
             setRows(rows.filter(row => row.id !== rowId));
             setFormData(formData.filter(row => row.id !== rowId));
         } else {
             alert("At least one row must remain.");
         }
-        // if (rows.length > 1) {
-        //     setRows(rows.filter(row => row.id !== rowId));
-        //     setFormData(formData.filter(row => row.id !== rowId));
-        // } else {
-        //     alert("At least one row must remain.");
-        // }
     };
 
     const generateNewId = () => {
@@ -172,29 +161,10 @@ const [selectedField,setSelectedField]= useState(null);
         setFormData(newFormData);
     };
 
-//handle Product auto commplete -------------------------------------------------------------------------------------------------
+
     const handleProduct = async (obj, rowIndex) => {
         const prdctid = obj.iId
-
-        // console.log(prdctid, obj, rowIndex);
-        // const newFormData = formData.map((row, index) => {
-        //     if (index === rowIndex) {
-        //         return { ...row, iProduct: obj.iId, Product: obj.sName };
-        //     }
-        //     return row;
-        // });
-        // setFormData(newFormData);
-     
-    // Check if the product already exists in the formData
-    const productExists = formData.some(row => row.iProduct === prdctid);
-
-    if (productExists) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Duplicate Product',
-            text: 'Product is already exist. Please select a unique product.',
-        });
-    }
+        console.log(prdctid, obj, rowIndex);
         const newFormData = formData.map((row, index) => {
             if (index === rowIndex) {
                 return { ...row, iProduct: obj.iId, Product: obj.sName };
@@ -202,19 +172,17 @@ const [selectedField,setSelectedField]= useState(null);
             return row;
         });
         setFormData(newFormData);
-    
 
         //handle batch--------------------------------------
 
         try {
             const res = await GetSalesBatch({
                 iProduct: obj.iId,
+                // iTransId: iTransId,
                 iTransId: trnsId,
                 iWarehouse: warehouseId,
             });
             const datas = JSON.parse(res?.data.ResultData);
-            console.log(res);
-
             const updatedData = datas.map((item) => ({
                 ...item,
                 ReqQty: "", // Set the initial value here, or leave it empty
@@ -229,14 +197,13 @@ const [selectedField,setSelectedField]= useState(null);
             setFormData(updatedFormData);
 
 
- //handle PRODUCT RATE API FETCHING--------------------------------------
-
             const response = await GetProduct_vat({
                 iProduct: prdctid
             })
             const ProductEXR = JSON.parse(response?.data.ResultData);
             const fVatPer = ProductEXR.map((item) => (item.fVatPer)).join()
             const fExciseTaxPer = ProductEXR.map((item) => (item.fTaxper)).join()
+            console.log(fExciseTaxPer, "fExciseTaxPer");
             const updatedFormDataS = updatedFormData.map((row, index) => {
                 if (index === rowIndex) {
                     return { ...row, fVatPer: fVatPer, fExciseTaxPer: fExciseTaxPer };
@@ -280,6 +247,7 @@ const [selectedField,setSelectedField]= useState(null);
                 const datas = JSON.parse(response?.data.ResultData);
                 const updatedFormData = newFormData.map((row, index) => {
                     var gross = row.fQty * datas[0].fRate
+                    console.log(gross);
                     if (index === rowIndex) {
                         return { ...row, fRate: datas[0].fRate, Gross: gross };
                     }
@@ -450,6 +418,7 @@ const [selectedField,setSelectedField]= useState(null);
                 text: 'No Balance Qty',
             });
         } else if (Number(typedValue) <= Number(fQty)) {
+            console.log(fQty, typedValue, rowIndex,iProduct,nonbatchableProduct,"formData--");
 
             // Update the fQty for the existing iProduct
             setNonbatchableProduct(prevState => prevState.map(item => 
@@ -519,6 +488,7 @@ const [selectedField,setSelectedField]= useState(null);
                     return total + rowQty + rowFreeQty;
                 }, 0);
 
+                console.log(newTotal, "newTotal-------------------------");
 
                 const updatedFormData = newFormData.map((row, index) => {
                     if (index === rowIndex) {
@@ -547,6 +517,14 @@ const [selectedField,setSelectedField]= useState(null);
 
 
     };
+
+
+
+    useEffect(() => {
+        const newTotal = Number(formData.reduce((total, row) => total + (Number(row.fQty) || 0), 0)) +
+            Number(formData.reduce((total, row) => total + (Number(row.fFreeQty) || 0), 0));
+        // setTotalQuantity(newTotal);
+    }, [formData]);
 
 
     //Handle Rate--------------------------------------------------------------------------------------------------------------------------
@@ -592,6 +570,7 @@ const [selectedField,setSelectedField]= useState(null);
 
         var Gross1 = Number(formData[rowIndex].Gross) || 0;
         var discountPercentage = Number(formData[rowIndex].fDiscPerc) || 0;
+        console.log(vatPercentage, exVatPercentage, "exVatPercentage", Gross1, "Gross1", discountPercentage, "discountPercentage");
 
 
         var calculatedDiscountAmount = Gross1 * (discountPercentage / 100);
@@ -627,8 +606,7 @@ const [selectedField,setSelectedField]= useState(null);
         }));
 
     }
-    
-// TABLE total ALL  value ---------------------------------------------------------------
+    // TABLE total ALL  value ---------------------------------------------------------------
     const sumFNet = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.fNet || 0);
     }, 0);
@@ -636,6 +614,8 @@ const [selectedField,setSelectedField]= useState(null);
     const sumFQty = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.fQty);
     }, 0);
+
+    
 
     const sumgross = formData.reduce((accumulator, currentValue) => {
         return accumulator + parseFloat(currentValue.Gross);
@@ -678,129 +658,48 @@ const [selectedField,setSelectedField]= useState(null);
     const [isModalOpens, setIsModalOpens] = useState(false);
     const [inputValue, setInputValue] = useState('');
 
-    const handleAddChargesClick = (field) => {
-        console.log(field,"handleAddChargesClick");
+    const handleAddChargesClick = () => {
         setIsModalOpens(true);
-        setSelectedField(field); // Store the field value in state
     };
 
-//     const handleLoadClick = (inputValue) => {
-//         console.log(inputValue,selectedField, "------------input");
-// if (selectedField=='Add Charges') {
-    
+    const handleLoadClick = (inputValue) => {
+        console.log(inputValue, "------------input");
+        let remainingQty = inputValue
 
-// }
+        const updated = formData.map((item) => {
+            console.log(item.Gross, "=");
 
-//         // const updated = formData.map((item) => {
-//         //     console.log(item.Gross, "=");
+            let allocatedQty = 0;
+            if (remainingQty > item.Gross) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'The amount is not applicable to any row.',
+                });
+            } else
+                if (item.Gross <= remainingQty) {
+                    allocatedQty = item.Gross;
+                    remainingQty -= item.Gross;
+                } else {
+                    allocatedQty = remainingQty;
+                    remainingQty = 0;
+                }
+            console.log(allocatedQty);
 
-//         //     let allocatedQty = 0;
-//         //     if (remainingQty > item.Gross) {
-//         //         Swal.fire({
-//         //             icon: 'error',
-//         //             title: 'Error',
-//         //             text: 'The amount is not applicable to any row.',
-//         //         });
-//         //     } else
-//         //         if (item.Gross <= remainingQty) {
-//         //             allocatedQty = item.Gross;
-//         //             remainingQty -= item.Gross;
-//         //         } else {
-//         //             allocatedQty = remainingQty;
-//         //             remainingQty = 0;
-//         //         }
-//         //     console.log(allocatedQty);
-
-//         //     return {
-//         //         ...item,
-//         //         fAddCharges: allocatedQty,
-//         //         //   fQty: item.fQty - allocatedQty
-//         //         //   fQty:  allocatedQty
-
-//         //     };
-//         // })
-//         // console.log(updated, "updated--------------------------");
-//         // Perform actions with inputValue
-//         setIsModalOpens(false);
-//     };
-
-const handleLoadClick = (inputValue) => {
-    console.log(inputValue, selectedField, "------------input");
-
-              
-//     const itemsGreaterThanInput = formData.filter(item => item.Gross > inputValue).length;
-
-//     console.log(itemsGreaterThanInput,"itemsGreaterThanInput");
-
-//   const updatedFormData1 = formData.map((item) => {
-//     const newDivideValue =  inputValue / itemsGreaterThanInput
-
-//     if (newDivideValue > item.Gross) {
-//       console.log(newDivideValue,lowestGross,"lowestGross");
-//       isValid = false;
-//     }    
-
-
-  
-    if (selectedField === 'Add Charges') {
-      if (formData.length > 0) {
-        const updatedFormData1 = formData.map((item) => {
-          const newAddCharges =  inputValue / formData.length
-          return {
-            ...item,
-            fAddCharges: newAddCharges,
-          };
-        });
-        setFormData(updatedFormData1);
-      }
-
-    }else if (selectedField === 'Dis Amount' ) {
-        if (formData.length > 0) {
-            let isValid = true;
-
-            const lowestGross = formData.reduce((min, item) => {
-                return item.Gross < min ? item.Gross : min;
-              }, Infinity);
-              
-              
-
-            const updatedFormData1 = formData.map((item) => {
-              const newAddCharges =  inputValue / formData.length
-
-              if (newAddCharges > lowestGross) {
-                console.log(newAddCharges,lowestGross,"lowestGross");
-
-    
-                isValid = false;
-              }    
-              return {
+            return {
                 ...item,
-                fDiscAmt: newAddCharges,
-              };
-            });
-            console.log(newAddCharges,item.Gross,"newAddCharges");
+                fAddCharges: allocatedQty,
+                //   fQty: item.fQty - allocatedQty
+                //   fQty:  allocatedQty
 
-            if (isValid) {
-                console.log(updatedFormData1,"updatedFormData");
-              setFormData(updatedFormData1);
-            } else {
-                console.log("updatedFormData--------------------");
-    
-              Swal.fire({
-                title: 'Error!',
-                text: 'Added charges value exceeds the Gross value.',
-                icon: 'error',
-                confirmButtonText: 'OK',
-              });
-            }
-          }
-    }
-  
-    setIsModalOpens(false);
-  };
+            };
+        })
+        console.log(updated, "updated--------------------------");
+        // Perform actions with inputValue
+        setIsModalOpens(false);
+    };
 
-    const handleDisAmountClick = (field) => {
-        setSelectedField(field); // Store the field value in state
+    const handleDisAmountClick = () => {
         setIsModalOpens(true);
     };
     const handleCloseModals = () => {
@@ -846,11 +745,11 @@ const handleLoadClick = (inputValue) => {
                                     sx={{ padding: '0px 0px', height: '40px', border: '1px solid rgba(224, 224, 224, 1)', backgroundColor: buttonColor1, color: 'white' }}
                                 >
                                     {field.sFieldName === 'Add Charges' ? (
-                                        <Button variant="contained" color="primary" onClick={() =>handleAddChargesClick(field.sFieldName)}>
+                                        <Button variant="contained" color="primary" onClick={handleAddChargesClick}>
                                             Add Charges
                                         </Button>
                                     ) : field.sFieldName === 'Dis Amount' ? (
-                                        <Button variant="contained" color="primary" onClick={() => handleDisAmountClick(field.sFieldName)}>
+                                        <Button variant="contained" color="primary" onClick={() => handleDisAmountClick()}>
                                             Dis Amount
                                         </Button>
                                     ) : (

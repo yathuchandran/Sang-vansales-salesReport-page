@@ -81,7 +81,6 @@ function HSEreport({ data }) {
     const [tableData, setTableData] = useState('')
     const [newValue, setNewValue] = useState(false)
 
-
     const buttonStyle = {
         textTransform: "none", // Set text transform to none for normal case
         color: `${secondaryColorTheme}`, // Set text color
@@ -235,8 +234,51 @@ function HSEreport({ data }) {
                 const head = JSON.parse(response.data.ResultData).Table
                 const body = JSON.parse(response.data.ResultData).Table1
                 const batch = JSON.parse(response.data.ResultData).Table2
-                setTableData(body)
                 console.log(head, "--------", body, "--------------", batch, "respons");
+
+
+          
+
+                    const updatedFormData = body.map(bodyItem => {
+                        const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
+                        const updatedBatchPop = batchItems.map(batchItem => ({
+                          sBatchNo: batchItem.sBatch,
+                          fQty: batchItem.fQty,
+                          iExpDate: '31-05-2024', // Example expiration date, set accordingly
+                          ReqQty: batchItem.fQty, // Initialize as empty
+                          bFoc: batchItem.bFoc,
+                          iProduct: batchItem.iProduct,
+                          iTransDtId: batchItem.iTransDtId,
+                          ibatch: batchItem.ibatch,
+                        }));
+
+                        return {
+                          Batch: "", 
+                          Gross: bodyItem.fQty *bodyItem.fRate, // Set this based on your logic
+                          Product: bodyItem.sProduct,
+                          fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
+                          Unit: bodyItem.Unit,
+                          fAddCharges: bodyItem.fAddCharges,
+                          fDiscAmt: bodyItem.fDiscAmt,
+                          fDiscPerc: bodyItem.fDiscPerc,
+                          fExciseTaxPer: bodyItem.fExciseTaxPer,
+                          fFreeQty: bodyItem.fFoc, // Set this based on your logic
+                          fNet: bodyItem.fNet,
+                          fQty: bodyItem.fQty,
+                          fRate: bodyItem.fRate,
+                          fVAT: bodyItem.fVAT,
+                          fVatPer: bodyItem.fVatPer,
+                          iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
+                          iProduct: bodyItem.iProduct,
+                          iUnit: bodyItem.iUnit,
+                          id: bodyItem.iTransDtId, // Or another unique identifier
+                          sRemarks: bodyItem.sRemarks,
+                          bBatch: bodyItem.bBatch,
+                          batch: updatedBatchPop // Store the entire batch data if needed
+                        };
+                      });
+                  
+                setTableData(updatedFormData)
                 const headData = head[0];
                 const [day, month, year] = headData.sDate.split('-');
                 const formattedDate = `${year}-${month}-${day}`;
@@ -279,8 +321,8 @@ function HSEreport({ data }) {
 
 
     const handleSave = async () => {
-        console.log(batchData,bodyData,"handleSave------------------------");
 //WARNGING ALERT MESSAGES----------------------------------------------------------
+console.log(bodyData);
         if (saleManeId===0) {
             Swal.fire({
                             title: "Error!",
@@ -317,7 +359,51 @@ function HSEreport({ data }) {
                         });
                         return;
         }
+        if (bodyData.length > 0) {
+            for (let i = 0; i < bodyData.length; i++) {
+                const item = bodyData[i];
+        
+                if (!item.iProduct || item.iProduct === 0) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please select a product",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
+        
+                if (!item.fQty || item.fQty === 0) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please enter a quantity",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
+        
+                if (!item.iUnit||item.iUnit===0) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please select a unit",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
 
+                if (!item.fRate||item.fRate===0) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please enter a Rate",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    return;
+                }
+            }
+        }
         try {
             const formData = {
                 // iTransId: selected,
@@ -347,15 +433,20 @@ function HSEreport({ data }) {
                         sRemarks: item.sRemarks,
                         iUnit: item.iUnit,
                         fNet: item.fNet,
-                        Batch: Array.isArray(batchData) ? batchData.map(batchItem => ({
+                        Batch: item.batch.map(batchItem => ({
                             iBatch: batchItem.iBatch,
                             sBatch: batchItem.sBatchNo,
                             fQty: batchItem.fQty,
+                            // fQty: batchItem.ReqQty,
                             iCondition: batchItem.iCondition,
                             bFoc: batchItem.bFoc
-                        })) : [] // Ensure Batch is an empty array if batchData is not an array
+                        })) 
+
+                
                     }))
             };
+
+            console.log(formData,"handleSave");
 
             const res = await PostSales(formData)
 
@@ -495,19 +586,7 @@ function HSEreport({ data }) {
                                 >
                                     Next
                                 </Button>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<PrintIcon />}
-                                    style={buttonStyle}
-                                    //   onClick={handleExportToExcel}
-                                    sx={{
-                                        ...buttonStyle,
-                                        fontSize: { xs: "0.60rem", sm: "0.75rem", md: "0.875rem" }, // Adjust font size based on screen size
-                                        padding: { xs: "1px 2px", sm: "3px 6px", md: "6px 12px" }, // Adjust padding based on screen size
-                                    }}
-                                >
-                                    Suspend
-                                </Button>
+                               
                                 <Button
                                     variant="contained"
                                     startIcon={<CloseIcon />}

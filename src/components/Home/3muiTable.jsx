@@ -34,6 +34,7 @@ const MuiEditableTable = ({ bodyData, outlet, warehouseId, setProductIds, outlet
     const [gross, setGross] = useState(null);
     const [DiscountAmount, setDiscountAmount] = useState(null);
     const [Discount, setDiscount] = useState(null);
+    const [availqty, setAvailqty] = useState(0)
     const [selectedField, setSelectedField] = useState(null);
 
     const [nonbatchableProduct, setNonbatchableProduct] = useState([]);
@@ -399,8 +400,8 @@ console.log(formData,"formData")
 
         if (Batchs && Batchs.length > 0) {
             const fQtys = Batchs.map((item) => item.fQty);
-
             const sum = fQtys.reduce((total, currentValue) => total + currentValue, 0);
+            setAvailqty(Number(sum));
 
             if (fQty === 0) {
                 Swal.fire({
@@ -412,7 +413,7 @@ console.log(formData,"formData")
             if (Number(typedValue) <= Number(sum)) {
                 setFormData(formData.map((row, index) => {
                     if (index === rowIndex) {
-                        return { ...row, fQty: typedValue,availqty:sum };
+                        return { ...row, fQty: typedValue };
                     }
                     return row;
                 }));
@@ -431,18 +432,17 @@ console.log(formData,"formData")
             });
         } else if (Number(typedValue) <= Number(fQty)) {
 
-            // // Update the fQty for the existing iProduct
-            // setNonbatchableProduct(prevState => prevState.map(item =>
-            //     item.iProduct === iProduct
-            //         ? { ...item, reqQty: typedValue, freeQty: item.fQty - typedValue }
-            //         : item
-            // ));
+            // Update the fQty for the existing iProduct
+            setNonbatchableProduct(prevState => prevState.map(item =>
+                item.iProduct === iProduct
+                    ? { ...item, reqQty: typedValue, freeQty: item.fQty - typedValue }
+                    : item
+            ));
 
-            
 
             setFormData(formData.map((row, index) => {
                 if (index === rowIndex) {
-                    return { ...row, fQty: typedValue ,availqty:Number(fQty)};
+                    return { ...row, fQty: typedValue };
                 }
                 return row;
             }));
@@ -479,12 +479,12 @@ console.log(formData,"formData")
             if (Number(typedValue) <= freeQty) {
                 console.log(Number(typedValue), Number(formData[rowIndex]?.fQty), freeQty, "formData[rowIndex");
 
-                // // Update the fQty for the existing iProduct
-                // setNonbatchableProduct(prevState => prevState.map(item =>
-                //     item.iProduct === iProduct
-                //         ? { ...item, freeQty: freeQty - typedValue, }
-                //         : item
-                // ));
+                // Update the fQty for the existing iProduct
+                setNonbatchableProduct(prevState => prevState.map(item =>
+                    item.iProduct === iProduct
+                        ? { ...item, freeQty: freeQty - typedValue, }
+                        : item
+                ));
 
                 const newFormData = formData.map((row, index) => {
                     if (index === rowIndex) {
@@ -494,38 +494,28 @@ console.log(formData,"formData")
                 });
 
 
-                // // Calculate the new total quantity-----------------------------------------------
-                // const newTotal = newFormData.reduce((total, row, index) => {
-                //     const rowQty = Number(row.fQty) || 0;
-                //     const rowFreeQty = Number(row.fFreeQty) || 0;
-                //     return total + rowQty + typedValue;
-                // }, 0);
+                // Calculate the new total quantity
+                const newTotal = newFormData.reduce((total, row, index) => {
+                    const rowQty = Number(row.fQty) || 0;
+                    const rowFreeQty = Number(row.fFreeQty) || 0;
+                    return total + rowQty + rowFreeQty;
+                }, 0);
 
-                const newTotal =  Number(formData[rowIndex].fQty) + Number(typedValue);
 
-                if (newTotal<=Number(formData[rowIndex].availqty)) {
-                    const updatedFormData = newFormData.map((row, index) => {
-                        if (index === rowIndex) {
-                            return { ...row, fTotalQty: newTotal };
-                        }
-                        return row;
-                    });
-    
-                    setFormData(updatedFormData);
-                }else{
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Warning',
-                        text: `Should be less than Qty ${Number(formData[rowIndex].availqty)}`,
-                    });
-                }
-                
+                const updatedFormData = newFormData.map((row, index) => {
+                    if (index === rowIndex) {
+                        return { ...row, fTotalQty: newTotal };
+                    }
+                    return row;
+                });
+
+                setFormData(updatedFormData);
             }
             else {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Warning',
-                    text: `Should be less than Qty ${Number(formData[rowIndex].availqty)}`,
+                    text: `Should be less than Qty ${availqty}`,
                 });
             }
 

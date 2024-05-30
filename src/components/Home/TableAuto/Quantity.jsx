@@ -41,12 +41,10 @@ export default function Quantity({
     const [iTypeF2ICP, setiTypeF2ICP] = useState(1);
 
     useEffect(() => {
-        console.log(value, "value-searchkey");
         setSearchKey(value || "");
 
     }, [value]);
 
-console.log(ProductId,"ProductId qty auto ==========================================");
 
     useEffect(() => {
         const fetchData = async () => {

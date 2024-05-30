@@ -32,7 +32,7 @@ const bodyData = [
     { sFieldName: "Req.Qty", sFieldCaption: "Req.Qty" },
 ];
 
-function Modals({ isOpen, handleNewClose, mode,  formDataEdit, setBatchData, Batch, setBatch,formDatass}) {
+function Modals({ isOpen, handleNewClose, mode,  formDataEdit,  Batch, setBatch,formDatass ,setFormData ,selectedFOrmsData}) {
     const getInitialFormData = () => {
         return {
             id: 0,
@@ -58,13 +58,10 @@ function Modals({ isOpen, handleNewClose, mode,  formDataEdit, setBatchData, Bat
     const [fQuantity,setfQuantity] = useState(null);
     const [item,setItem] = useState(null);
     const [filteredReqQty, setFilteredReqQty] = useState([]);
-console.log(filteredReqQty,"filteredReqQty");
-   useEffect(()=>{
-    setBatchData(filteredReqQty)
-   },[filteredReqQty])
+
+
 
     const modalStyle = { display: isOpen ? "block" : "none" };
-console.log(formDatass,"formDatass---------------------------------------------");
 
     useEffect(() => {
         if (reqQty) {
@@ -125,11 +122,8 @@ console.log(formDatass,"formDatass---------------------------------------------"
     };
 
     useEffect(() => {
-        formDatass.forEach((item) => {
-             setfQuantity(item.fQty)
-             setItem(item.Product)
-        
-        });
+        setfQuantity(selectedFOrmsData.fQty)
+        setItem(selectedFOrmsData.Product)
       }, []);
 
 
@@ -181,26 +175,53 @@ console.log(formDatass,"formDatass---------------------------------------------"
         }
     };
 
+
+ //load Buttuon click-------------------------------------------------------------------------------------
     const handleloads = () => {
-        console.log("hello handleloads ");
-        //for posting values-----------------------------------------------------------
+        // Mapping of sBatchNo to iBatch values
+    const batchMapping = {
+        batchA: 1,
+        batchB: 2,
+        batchC: 3,
+        batch1: 4,
+        batch2: 5,
+        // Add more mappings as needed
+    };
             const filtered = reqQty.filter(item => item.ReqQty > 0);
             const updatedData = filtered.map((item) => ({
                 ...item,
-                iBatch: 0, // Set the initial value here, or leave it empty
+                 iBatch: batchMapping[item.sBatchNo] || 0, // Set the iBatch value based on the mapping, default to 0 if not found
                 iCondition:0,
-                bFoc:0,
+                bFoc:1,
             }));
+            
             setFilteredReqQty(updatedData);
-        
 
-        if (Number(fQuantity) !== Number(allocatedValue)) {
+            const Data = formDatass.map((item) => {
+                if (item.iProduct === selectedFOrmsData.iProduct) {
+                    return {
+                        ...item,
+                        batch: updatedData,
+                    };
+                }
+                return item;
+            });
+            
+
+            setFormData(Data)
+
+                if (Number(fQuantity) !== Number(allocatedValue)) {
             Swal.fire({
                 icon: 'warning',
                 text: `Quantity ${fQuantity} and allocated ${allocatedValue} must be equal.`,
             });
         }
+
+        handleCloseModal();
     };
+
+
+
 
     const handleClose = () => {
         setOpen(false);

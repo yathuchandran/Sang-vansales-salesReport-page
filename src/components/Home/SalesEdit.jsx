@@ -34,7 +34,7 @@ import {
 } from "mdb-react-ui-kit";
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DeleteAllTransactions, GetNextDocNo, GetPrev_NextDocNo, GetSalesDetails, GetWarehouse, PostSales } from '../../api/Api';
+import { DeleteAllTransactions, GetNextDocNo, GetPrev_NextDocNo, GetSalesBatch, GetSalesDetails, GetWarehouse, PostSales } from '../../api/Api';
 import AutoComplete3 from './AutoComplete/AutocmpltWarehouse';
 import SalesManAuto from './AutoComplete/SalesManAuto';
 import OutletAuto from './AutoComplete/outlet';
@@ -225,81 +225,235 @@ function HSEreport({ data }) {
 
 
     useEffect(() => {
-        const details = async () => {
-            try {
-                const response = await GetSalesDetails({
-                    // iTransId: 
-                    iTransId:trnsId,
-                })
-                const head = JSON.parse(response.data.ResultData).Table
-                const body = JSON.parse(response.data.ResultData).Table1
-                const batch = JSON.parse(response.data.ResultData).Table2
-                console.log(head, "--------", body, "--------------", batch, "respons");
+//         const details = async () => {
+//             try {
+//                 const response = await GetSalesDetails({
+//                     // iTransId: 
+//                     iTransId:trnsId,
+//                 })
+//                 const head = JSON.parse(response.data.ResultData).Table
+//                 const body = JSON.parse(response.data.ResultData).Table1
+//                 const batch = JSON.parse(response.data.ResultData).Table2
+//                 console.log(head, "--------", body, "--------------", batch, "respons");
 
 
           
 
-                    const updatedFormData = body.map(bodyItem => {
-                        const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
-                        const updatedBatchPop = batchItems.map(batchItem => ({
-                          sBatchNo: batchItem.sBatch,
-                          fQty: batchItem.fQty,
-                          iExpDate: '31-05-2024', // Example expiration date, set accordingly
-                          ReqQty: batchItem.fQty, // Initialize as empty
-                          bFoc: batchItem.bFoc,
-                          iProduct: batchItem.iProduct,
-                          iTransDtId: batchItem.iTransDtId,
-                          ibatch: batchItem.ibatch,
-                        }));
+//                     const updatedFormData = body.map(bodyItem => {
+//                         const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
+// // Extract unique iProduct values
+// const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
 
-                        return {
-                          Batch: "", 
-                          Gross: bodyItem.fQty *bodyItem.fRate, // Set this based on your logic
-                          Product: bodyItem.sProduct,
-                          fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
-                          Unit: bodyItem.Unit,
-                          fAddCharges: bodyItem.fAddCharges,
-                          fDiscAmt: bodyItem.fDiscAmt,
-                          fDiscPerc: bodyItem.fDiscPerc,
-                          fExciseTaxPer: bodyItem.fExciseTaxPer,
-                          fFreeQty: bodyItem.fFoc, // Set this based on your logic
-                          fNet: bodyItem.fNet,
-                          fQty: bodyItem.fQty,
-                          fRate: bodyItem.fRate,
-                          fVAT: bodyItem.fVAT,
-                          fVatPer: bodyItem.fVatPer,
-                          iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
-                          iProduct: bodyItem.iProduct,
-                          iUnit: bodyItem.iUnit,
-                          id: bodyItem.iTransDtId, // Or another unique identifier
-                          sRemarks: bodyItem.sRemarks,
-                          bBatch: bodyItem.bBatch,
-                          batch: updatedBatchPop // Store the entire batch data if needed
-                        };
-                      });
+// // Store the first unique iProduct value in a variable
+// const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
+
+// let batchData = {};
+// if (uniqueIProduct) {
+//   const res = await GetSalesBatch({
+//     iProduct: uniqueIProduct,
+//     iTransId: trnsId,
+//     iWarehouse: warehouseId,
+//   });
+
+//   batchData = JSON.parse(res?.data.ResultData);
+//   console.log(uniqueIProduct, res, batchData, "batchItems=======================================");
+// }
+
+                        
+
+
+
+//                         const updatedBatchPop = batchItems.map(batchItem => ({
+//                           sBatchNo: batchItem.sBatch,
+//                           fQty: batchItem.fQty,
+//                           iExpDate: '31-05-2024', // Example expiration date, set accordingly
+//                           ReqQty: batchItem.fQty, // Initialize as empty
+//                           bFoc: batchItem.bFoc,
+//                           iProduct: batchItem.iProduct,
+//                           iTransDtId: batchItem.iTransDtId,
+//                           ibatch: batchItem.ibatch,
+//                         }));
+
+//                         return {
+//                           Batch: "", 
+//                           Gross: bodyItem.fQty *bodyItem.fRate, // Set this based on your logic
+//                           Product: bodyItem.sProduct,
+//                           fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
+//                           Unit: bodyItem.Unit,
+//                           fAddCharges: bodyItem.fAddCharges,
+//                           fDiscAmt: bodyItem.fDiscAmt,
+//                           fDiscPerc: bodyItem.fDiscPerc,
+//                           fExciseTaxPer: bodyItem.fExciseTaxPer,
+//                           fFreeQty: bodyItem.fFoc, // Set this based on your logic
+//                           fNet: bodyItem.fNet,
+//                           fQty: bodyItem.fQty,
+//                           fRate: bodyItem.fRate,
+//                           fVAT: bodyItem.fVAT,
+//                           fVatPer: bodyItem.fVatPer,
+//                           iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
+//                           iProduct: bodyItem.iProduct,
+//                           iUnit: bodyItem.iUnit,
+//                           id: bodyItem.iTransDtId, // Or another unique identifier
+//                           sRemarks: bodyItem.sRemarks,
+//                           bBatch: bodyItem.bBatch,
+//                           batch: updatedBatchPop // Store the entire batch data if needed
+//                         };
+//                       });
                   
-                setTableData(updatedFormData)
-                const headData = head[0];
-                const [day, month, year] = headData.sDate.split('-');
-                const formattedDate = `${year}-${month}-${day}`;
+//                 setTableData(updatedFormData)
+//                 const headData = head[0];
+//                 const [day, month, year] = headData.sDate.split('-');
+//                 const formattedDate = `${year}-${month}-${day}`;
 
-                setDate(formattedDate);
+//                 setDate(formattedDate);
 
-                setoutlet(headData.Outlet)
-                setoutletid(headData.iOutlet)
-                setWarehouseId(headData.iWarehouse)
-                setWarehouse(headData.Warehouse)
-                setsaleMane(headData.sDriver)
-                setsaleManeId(headData.iDriver)
-                setTypes(headData.iType_Sale)
-                setNarration(headData.sNarration)
-                setTransId(headData.iTransId)
-                setdocNum(headData.sDocNo)
-            } catch (error) {
-                console.log(error);
-            }
+//                 setoutlet(headData.Outlet)
+//                 setoutletid(headData.iOutlet)
+//                 setWarehouseId(headData.iWarehouse)
+//                 setWarehouse(headData.Warehouse)
+//                 setsaleMane(headData.sDriver)
+//                 setsaleManeId(headData.iDriver)
+//                 setTypes(headData.iType_Sale)
+//                 setNarration(headData.sNarration)
+//                 setTransId(headData.iTransId)
+//                 setdocNum(headData.sDocNo)
+//             } catch (error) {
+//                 console.log(error);
+//             }
+//         }
+//         details()
+
+const details = async () => {
+    try {
+        console.log(trnsId,"trnsId---------------------------------------");
+      const response = await GetSalesDetails({ iTransId: trnsId });
+      const { Table: head, Table1: body, Table2: batch } = JSON.parse(response.data.ResultData);
+      const headData = head[0];
+
+      console.log(head, "--------", body, "--------------", batch, "response");
+  
+      const updatedFormData = await Promise.all(body.map(async (bodyItem) => {
+        const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
+  
+        // Extract unique iProduct values
+        const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
+  
+        // Store the first unique iProduct value in a variable
+        const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
+
+        let datas={}
+        if (uniqueIProduct) {
+          const res = await GetSalesBatch({
+            iProduct: uniqueIProduct,
+            // iTransId: trnsId,
+            iTransId: 0,
+            iWarehouse: headData.iWarehouse,
+          });
+  
+           datas = JSON.parse(res?.data.ResultData)
+
         }
-        details()
+
+        const updatedBatchItems = batchItems.map(batchItem => {
+            const matchingData = datas.find(data => data.sBatchNo === batchItem.sBatch);
+            return matchingData
+              ? { ...batchItem, availQty: matchingData.fQty,iExpDate:matchingData.iExpDate }
+              : batchItem;
+          });
+
+
+        // const updatedBatchPop = updatedBatchItems.map(batchItem => ({
+        //   sBatchNo: batchItem.sBatch,
+        //   fQty: batchItem.availQty,
+        //   iExpDate: batchItem.iExpDate, // Example expiration date, set accordingly
+        //   ReqQty: batchItem.fQty, // Initialize as empty
+        //   bFoc: batchItem.bFoc,
+        //   iProduct: batchItem.iProduct,
+        //   iTransDtId: batchItem.iTransDtId,
+        //   ibatch: batchItem.ibatch,
+        // }));
+
+
+const updatedBatchPop = updatedBatchItems
+.filter(batchItem => batchItem.bFoc === 0)
+.map(batchItem => ({
+  sBatchNo: batchItem.sBatch,
+  fQty: batchItem.availQty,
+  iExpDate: batchItem.iExpDate,
+  ReqQty: batchItem.fQty,
+  bFoc: batchItem.bFoc,
+  iProduct: batchItem.iProduct,
+  iTransDtId: batchItem.iTransDtId,
+  ibatch: batchItem.ibatch
+}));
+
+const freeUpdatedBatch = updatedBatchItems
+.filter(batchItem => batchItem.bFoc === 1)
+.map(batchItem => ({
+  sBatchNo: batchItem.sBatch,
+  fQty: batchItem.availQty,
+  iExpDate: batchItem.iExpDate,
+  ReqQty: batchItem.fQty,
+  bFoc: batchItem.bFoc,
+  iProduct: batchItem.iProduct,
+  iTransDtId: batchItem.iTransDtId,
+  ibatch: batchItem.ibatch
+}));
+
+console.log(freeUpdatedBatch,updatedBatchPop,"batchItems=======================================");
+
+  
+        return {
+          Batch: "",
+          Gross: bodyItem.fQty * bodyItem.fRate, // Set this based on your logic
+          Product: bodyItem.sProduct,
+          fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
+          Unit: bodyItem.Unit,
+          fAddCharges: bodyItem.fAddCharges,
+          fDiscAmt: bodyItem.fDiscAmt,
+          fDiscPerc: bodyItem.fDiscPerc,
+          fExciseTaxPer: bodyItem.fExciseTaxPer,
+          fFreeQty: bodyItem.fFoc, // Set this based on your logic
+          fNet: bodyItem.fNet,
+          fQty: bodyItem.fQty,
+          fRate: bodyItem.fRate,
+          fVAT: bodyItem.fVAT,
+          fVatPer: bodyItem.fVatPer,
+          iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
+          iProduct: bodyItem.iProduct,
+          iUnit: bodyItem.iUnit,
+          id: bodyItem.iTransDtId, // Or another unique identifier
+          sRemarks: bodyItem.sRemarks,
+          bBatch: bodyItem.bBatch,
+          batch: updatedBatchPop, // Store the entire batch data if needed
+          freeBatch:freeUpdatedBatch,
+        };
+      }));
+  
+      setTableData(updatedFormData);
+  
+      const [day, month, year] = headData.sDate.split('-');
+      const formattedDate = `${year}-${month}-${day}`;
+  
+      setDate(formattedDate);
+      setoutlet(headData.Outlet);
+      setoutletid(headData.iOutlet);
+      setWarehouseId(headData.iWarehouse);
+      setWarehouse(headData.Warehouse);
+      setsaleMane(headData.sDriver);
+      setsaleManeId(headData.iDriver);
+      setTypes(headData.iType_Sale);
+      setNarration(headData.sNarration);
+      setTransId(headData.iTransId);
+      setdocNum(headData.sDocNo);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  details();
+  
+
     }, [selectTransid, selected ,trnsId])
 
     const handleNew = async () => {
@@ -322,7 +476,7 @@ function HSEreport({ data }) {
 
     const handleSave = async () => {
 //WARNGING ALERT MESSAGES----------------------------------------------------------
-console.log(bodyData);
+console.log(bodyData,"bodyData");
         if (saleManeId===0) {
             Swal.fire({
                             title: "Error!",
@@ -433,16 +587,22 @@ console.log(bodyData);
                         sRemarks: item.sRemarks,
                         iUnit: item.iUnit,
                         fNet: item.fNet,
-                        Batch: item.batch.map(batchItem => ({
-                            iBatch: batchItem.iBatch,
-                            sBatch: batchItem.sBatchNo,
-                            fQty: batchItem.fQty,
-                            // fQty: batchItem.ReqQty,
-                            iCondition: batchItem.iCondition,
-                            bFoc: batchItem.bFoc
-                        })) 
-
-                
+                        Batch: [
+                            ...item.batch.map(batchItem => ({
+                              iBatch: batchItem.iBatch,
+                              sBatch: batchItem.sBatchNo,
+                              fQty: batchItem.ReqQty,
+                              iCondition: batchItem.iCondition,
+                              bFoc: batchItem.bFoc
+                            })),
+                            ...item.freeBatch.map(freeBatchItem => ({
+                              iBatch: freeBatchItem.iBatch,
+                              sBatch: freeBatchItem.sBatchNo,
+                              fQty: freeBatchItem.ReqQty,
+                              iCondition: freeBatchItem.iCondition,
+                              bFoc: freeBatchItem.bFoc
+                            }))
+                        ]
                     }))
             };
 

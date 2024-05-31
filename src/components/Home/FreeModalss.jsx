@@ -32,8 +32,11 @@ const bodyData = [
     { sFieldName: "Req.Qty", sFieldCaption: "Req.Qty" },
 ];
 
-function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, formDatass, setFormData, selectedFOrmsData }) {
-    // console.log('MODAL 1111111111111111111111111111111111111111');
+function FreeModalss({ isOpen, handleNewClose, mode,  formDataEdit,  Batch, setBatch,formDatass ,setFormData ,selectedFOrmsData}) {
+
+//   console.log("HELLO FREEE MODAL------------------------------------------------------------------------");
+
+
     const [open, setOpen] = useState(false);
     const [warning, setWarning] = useState(false);
     const [message, setMessage] = useState("");
@@ -41,8 +44,8 @@ function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, f
     const [iIds, setIids] = useState();
     const [reqQty, setReqQty] = useState(null);
     const [allocatedValue, setAllocatedValue] = useState(null);
-    const [fQuantity, setfQuantity] = useState(null);
-    const [item, setItem] = useState(null);
+    const [fQuantity,setfQuantity] = useState(null);
+    const [item,setItem] = useState(null);
     const [filteredReqQty, setFilteredReqQty] = useState([]);
 
 
@@ -60,77 +63,67 @@ function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, f
         setIids(formDataEdit);
     }, [mode, formDataEdit]);
 
-
+   
 
     const handleCloseModal = () => {
         handleNewClose();
     };
 
-
+  
     // FIFO stock allocation function
     const handleFifo = () => {
+
         formDatass.forEach((item) => {
             if (item.iProduct === item.iProduct) { // Assuming you meant to compare ProductId with iProduct
 
-                let remainingQty = item.fQty; // Total quantity to be allocated
+              let remainingQty = item.fFreeQty; // Total quantity to be allocated
+              const updatedBatch = Batch.map((item) => {
+                  let allocatedQty = 0;
+                  if (item.fQty <= remainingQty) {
+                      allocatedQty = item.fQty;
+                      remainingQty -= item.fQty;
+                  } else {
+                      allocatedQty = remainingQty;
+                      remainingQty = 0;
+                  }
+                  return {
+                      ...item,
+                      ReqQty: allocatedQty,
+                    //   fQty: item.fQty - allocatedQty
+                    // fQty:  allocatedQty
 
-                const updatedBatch = Batch.map((item) => {
-                    let allocatedQty = 0;
-                    if (item.fQty <= remainingQty) {
-                        allocatedQty = item.fQty;
-                        remainingQty -= item.fQty;
-                    } else {
-                        allocatedQty = remainingQty;
-                        remainingQty = 0;
-                    }
-                    return {
-                        ...item,
-                        ReqQty: allocatedQty,
-                        //   fQty: item.fQty - allocatedQty
-                        // fQty:  allocatedQty
+                  };
+              });
+              const allocatedValues = updatedBatch.map((item) => item.ReqQty);
+              const getTotalSum = (values) => {
+                return values.reduce((acc, value) => acc + Number(value), 0);
+              };
+            
+              const totalSum = getTotalSum(allocatedValues);
 
-                    };
-                });
-                const allocatedValues = updatedBatch.map((item) => item.ReqQty);
-                const getTotalSum = (values) => {
-                    return values.reduce((acc, value) => acc + Number(value), 0);
-                };
-
-                const totalSum = getTotalSum(allocatedValues);
-
-                setBatch(updatedBatch);
-                setReqQty(updatedBatch)
-
-                setAllocatedValue(totalSum);
+            //   setBatch(updatedBatch);
+              setReqQty(updatedBatch)
+              
+              setAllocatedValue(totalSum);
             }
-        });
-
+          });
+       
     };
 
     useEffect(() => {
-        setfQuantity(selectedFOrmsData.fQty)
+        
+        setfQuantity(selectedFOrmsData.fFreeQty)
         setItem(selectedFOrmsData.Product)
-    }, []);
+      }, []);
 
 
-    //handle all clearrr-------------------------
-    let data = selectedFOrmsData
     const handleAllClear = () => {
-        //  const batch=data.batch
-        //  const updatedBatch = batch.map(batchItem => ({
-        //     ...batchItem,
-        //     ReqQty: ''  // Set ReqQty to empty string
-        // }));
-        //     setFormData(updatedBatch)
-
-
         const updatedReqQty = reqQty.map(item => {
             if (item.ReqQty) {
                 return { ...item, ReqQty: '' };
             }
             return item;
         });
-        console.log(updatedReqQty, "updatedReqQty");
         setReqQty(updatedReqQty);
     };
 
@@ -143,9 +136,9 @@ function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, f
         const allocatedValues = updated.map((item) => item.ReqQty);
         const getTotalSum = (values) => {
             return values.reduce((acc, value) => acc + Number(value), 0);
-        };
-
-        const totalSum = getTotalSum(allocatedValues);
+          };
+        
+          const totalSum = getTotalSum(allocatedValues);
 
         if (Number(value) > fQuantity) {
             Swal.fire({
@@ -172,62 +165,52 @@ function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, f
     };
 
 
-    //load Buttuon click-------------------------------------------------------------------------------------
+ //load Buttuon click-------------------------------------------------------------------------------------
     const handleloads = () => {
         // Mapping of sBatchNo to iBatch values
-        const batchMapping = {
-            batchA: 1,
-            batchB: 2,
-            batchc: 3,
-            batch1: 4,
-            batch2: 5,
-            // Add more mappings as needed
-        };
-        const filtered = reqQty.filter(item => item.ReqQty > 0);
-        const updatedData = filtered.map((item) => ({
-            ...item,
-            iBatch: batchMapping[item.sBatchNo] || 0, // Set the iBatch value based on the mapping, default to 0 if not found
-            iCondition: 0,
-            bFoc: 0,
-        }));
-
-        setFilteredReqQty(updatedData);
-
-        const freeupdatedData = reqQty
-            .map(item => {
-                const newQty = item.fQty - item.ReqQty;
-                return {
-                    ...item,
-                    fQty: newQty,
-                    ReqQty: '',
-                };
-            })
-            .filter(item => item.fQty > 0);
-
-console.log(updatedData,"updatedData");
-
-        const Data = formDatass.map((item) => {
-            if (item.iProduct === selectedFOrmsData.iProduct) {
-                return {
-                    ...item,
-                    batch: updatedData,
-                    freeBatch: freeupdatedData,
-                };
-            }
-            return item;
-        });
+    const batchMapping = {
+        batchA: 1,
+        batchB: 2,
+        batchC: 3,
+        batch1: 4,
+        batch2: 5,
+        // Add more mappings as needed
+    };
+            const filtered = reqQty.filter(item => item.ReqQty > 0);
+            const updatedData = filtered.map((item) => ({
+                ...item,
+                 iBatch: batchMapping[item.sBatchNo] || 0, // Set the iBatch value based on the mapping, default to 0 if not found
+                iCondition:0,
+                bFoc:1,
+            }));
+            
+            setFilteredReqQty(updatedData);
 
 
-        setFormData(Data)
 
-        if (Number(fQuantity) !== Number(allocatedValue)) {
+
+
+            const Data = formDatass.map((item) => {
+                if (item.iProduct === selectedFOrmsData.iProduct) {
+                    return {
+                        ...item,
+                        freeBatch: updatedData,
+                    };
+                }
+                return item;
+            });
+            
+
+            setFormData(Data)
+
+                if (Number(fQuantity) !== Number(allocatedValue)) {
             Swal.fire({
                 icon: 'warning',
                 text: `Quantity ${fQuantity} and allocated ${allocatedValue} must be equal.`,
             });
         }
 
-        // handleCloseModal();
+        handleCloseModal();
     };
 
 
@@ -417,7 +400,7 @@ console.log(updatedData,"updatedData");
                                         Load
                                     </Button>
                                     <Button
-                                        onClick={() => handleAllClear()}
+                                        onClick={handleAllClear}
                                         variant="contained"
                                         style={buttonStyle}
                                     >
@@ -439,4 +422,4 @@ console.log(updatedData,"updatedData");
     );
 }
 
-export default Modals;
+export default FreeModalss;

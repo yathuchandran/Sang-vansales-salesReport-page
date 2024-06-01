@@ -361,17 +361,10 @@ const details = async () => {
               : batchItem;
           });
 
+          const totalFQty = datas.reduce((sum, item) => sum + item.fQty, 0);
 
-        // const updatedBatchPop = updatedBatchItems.map(batchItem => ({
-        //   sBatchNo: batchItem.sBatch,
-        //   fQty: batchItem.availQty,
-        //   iExpDate: batchItem.iExpDate, // Example expiration date, set accordingly
-        //   ReqQty: batchItem.fQty, // Initialize as empty
-        //   bFoc: batchItem.bFoc,
-        //   iProduct: batchItem.iProduct,
-        //   iTransDtId: batchItem.iTransDtId,
-        //   ibatch: batchItem.ibatch,
-        // }));
+
+       
 
 
 const updatedBatchPop = updatedBatchItems
@@ -427,6 +420,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
           bBatch: bodyItem.bBatch,
           batch: updatedBatchPop, // Store the entire batch data if needed
           freeBatch:freeUpdatedBatch,
+          availqty:totalFQty,
         };
       }));
   
@@ -476,7 +470,6 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
 
     const handleSave = async () => {
 //WARNGING ALERT MESSAGES----------------------------------------------------------
-console.log(bodyData,"bodyData");
         if (saleManeId===0) {
             Swal.fire({
                             title: "Error!",
@@ -606,7 +599,7 @@ console.log(bodyData,"bodyData");
                     }))
             };
 
-            console.log(formData,"handleSave");
+            // console.log(formData,"handleSave");
 
             const res = await PostSales(formData)
 

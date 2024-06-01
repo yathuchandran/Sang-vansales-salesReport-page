@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
-import MuiEditableTable from './MuiEditableTable';
+import MuiEditableTable from './MuiEditableTables';
 
 function Body({outlet,warehouseId,setProductIds,outletid,setBodyData,tableData,newValue,setNewValue,trnsId}) {
 

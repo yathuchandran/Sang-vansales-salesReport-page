@@ -21,7 +21,7 @@ const initialRows = [
     { id: 1, Product: '', iProduct: '', Unit: '', iUnit: '', fQty: '', Batch: '', fFreeQty: '', iBatch: '', TotalQty: '', fRate: '', fExciseTaxPer: '', Gross: '', fDiscPerc: '', fDiscAmt: '', fAddCharges: '', fVatPer: '', fVAT: '', sRemarks: '', fNet: '', fTotalQty: '', freeBatch: '' }
 ];
 
-const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outletid, setBodyData, tableData, newValue, setNewValue, trnsId, }) => {
+const MuiEditableTables = ({ bodyData, outlet, warehouseId, outletid, setBodyData, tableData, newValue, setNewValue, trnsId, }) => {
     const [rows, setRows] = useState(initialRows);
     const [selected, setSelected] = useState([]);
     const [formData, setFormData] = useState(initialRows);
@@ -34,8 +34,6 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
     const [mode, setMode] = useState("new");
     const [gross, setGross] = useState(null);
     const [selectedField, setSelectedField] = useState(null);
-
-
     const [selectedFOrmsData, setSelectedFOrmsData] = useState('');
     const [freeFOrmsData, setFREEFOrmsData] = useState('');
     useEffect(() => {
@@ -48,14 +46,12 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
     // EDIT CASE DATA FETCHING ---------------------------------------------------------------------------------------------------------------
     useEffect(() => {
         if (tableData.length > 0) {
-
             setFormData(tableData);
         }
     }, [tableData])
 
 
     useEffect(() => {
-        setProductIds(formData.ProductId || null);
         setBodyData(formData || null)
     }, [formData.ProductId, formData]);
 
@@ -194,7 +190,6 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                 return row;
             });
             setFormData(updatedFormData);
-
 
             //handle PRODUCT RATE API FETCHING--------------------------------------
 
@@ -378,13 +373,13 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                             text: `Should be less than total balance Qty ${sum}`,
                         });
                     }
-                } else if (sum === 0) {
+                } else if (fQty === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Warning',
                         text: 'No Balance Qty',
                     });
-                } else if (Number(typedValue) <= Number(sum)) {
+                } else if (Number(typedValue) <= Number(fQty)) {
         
                     setFormData(formData.map((row, index) => {
                         if (index === rowIndex) {
@@ -698,6 +693,7 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
     const handleCloseModals = () => {
         setIsModalOpens(false);
     };
+
     return (
         <div>
             <IconButton
@@ -823,7 +819,7 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                                                         onChangeName={(obj) => handleProduct(obj, rowIndex)}
                                                     />
                                                 ) : (
-                                                    <div style={{ color: 'red' }}>Please select an outlet</div>
+                                                    <div style={{ color: '#8F8D81' }}>Please select an outlet</div>
                                                 )
                                             ) : field.sFieldCaption === "Unit" ? (
                                                 <UnitAutocomplete
@@ -860,7 +856,7 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div style={{ color: 'red' }}>Please select a product and unit</div>
+                                                    <div style={{ color: '#8F8D81' }}>Please select a product and unit</div>
                                                 )
                                             ) : field.sFieldCaption === "Batch" ? (
                                                 // formData[rowIndex].batch &&formData[rowIndex].batch.length > 0 ? (
@@ -896,7 +892,7 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div style={{ color: 'red' }}>Please select a product and unit</div>
+                                                    <div style={{ color: '#8F8D81' }}>Please select a product and unit</div>
                                                 )
                                             ) : field.sFieldCaption === "iBatch" ? (
                                                 row.freeBatch && row.freeBatch.length > 0 ? (
@@ -1170,7 +1166,6 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                                                 <Modals
                                                     isOpen={newOpen}
                                                     handleNewClose={handleNewClose}
-
                                                     formDatass={formData}
                                                     Batch={Batch}
                                                     setBatch={setBatch}
@@ -1186,13 +1181,11 @@ const MuiEditableTables = ({ bodyData, outlet, warehouseId, setProductIds, outle
                                                 <FreeModals
                                                     isOpen={newOpen1}
                                                     handleNewClose={handleNewClose}
-
                                                     formDatass={formData}
                                                     Batch={freeBatch}
                                                     setBatch={setFreeBatch}
                                                     mode={mode}
                                                     formDataEdit={mode === "edit" ? selected[0] : 0}
-
                                                     selectedFOrmsData={freeFOrmsData}
                                                     setFormData={setFormData}
                                                 />

@@ -41,32 +41,59 @@ export default function ProductAuto({
     const [iTypeF2ICP, setiTypeF2ICP] = useState(1);
 
     useEffect(() => {
-        setSearchKey(value || "");
+        setSearchKey(value );
+        console.log(value,"searchkey");
+
     }, [value]);
 
 
 
     useEffect(() => {
+    //     if (searchkey) {
+    //     const fetchData = async () => {
+    //         handleOpen();
+    //         const encodedSearchkey = encodeURIComponent(searchkey);
+    //         const data = {
+    //             sSearch: searchkey,
+    //             iType: iTypeF2ICP
+    //         }
+    //         const response = await GetProduct(data);
+    //         if (response?.data?.Status === "Success") {
+    //             const myObject = JSON.parse(response?.data?.ResultData);
+    //             setSuggestion(myObject);
+    //         } else if (response?.status === "Failure") {
+    //             setSuggestion([]);
+    //         }
+    //         handleClose();
+    //     };
+    //     fetchData();
+    // }
+    const trimmedSearchkey = typeof searchkey === 'string' ? searchkey.trim() : '';
+    // if (trimmedSearchkey) { // Ensure trimmed searchkey has a value before making the API call
         const fetchData = async () => {
             handleOpen();
-            const encodedSearchkey = encodeURIComponent(searchkey);
-            const data = {
-                
-                sSearch: encodedSearchkey,
-                iType: iTypeF2ICP
-            }
-            const response = await GetProduct(data);
-            if (response?.data?.Status === "Success") {
-                const myObject = JSON.parse(response?.data?.ResultData);
-                setSuggestion(myObject);
-            } else if (response?.status === "Failure") {
+            try {
+                const encodedSearchkey = encodeURIComponent(trimmedSearchkey);
+                const data = {
+                    sSearch: trimmedSearchkey,
+                    iType: iTypeF2ICP
+                };
+                const response = await GetProduct(data);
+                if (response?.data?.Status === "Success") {
+                    const myObject = JSON.parse(response?.data?.ResultData);
+                    setSuggestion(myObject);
+                } else {
+                    setSuggestion([]);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
                 setSuggestion([]);
+            } finally {
+                handleClose();
             }
-            handleClose();
-
-
         };
         fetchData();
+    // }
     }, [searchkey, iTypeF2ICP]);
 
 

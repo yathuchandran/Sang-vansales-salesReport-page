@@ -183,7 +183,7 @@ function Modals({ isOpen, handleNewClose, mode, formDataEdit, Batch, setBatch, f
             batch2: 5,
             // Add more mappings as needed
         };
-        const filtered = reqQty.filter(item => item.ReqQty > 0);
+        const filtered = (reqQty || []).filter(item => item.ReqQty > 0);
         const updatedData = filtered.map((item) => ({
             ...item,
             iBatch: batchMapping[item.sBatchNo] || 0, // Set the iBatch value based on the mapping, default to 0 if not found

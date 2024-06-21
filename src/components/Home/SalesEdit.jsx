@@ -48,7 +48,7 @@ function HSEreport({ data }) {
     const day = String(currentDate.getDate()).padStart(2, "0");
     const formattedCurrentDate = `${year}-${month}-${day}`;
 
-   
+
 
 
 
@@ -62,7 +62,7 @@ function HSEreport({ data }) {
     const PageName = location.state?.sName
     const selected = location.state ? location.state : 0;
 
-    const [trnsId,setTransId] = useState(selected )
+    const [trnsId, setTransId] = useState(selected)
     const [selectTransid, setSlctTransId] = useState(selected)
 
     const userId = localStorage.getItem("userId");
@@ -75,11 +75,11 @@ function HSEreport({ data }) {
     const [narration, setNarration] = useState('')
     const [typess, setTypes] = useState(null)
     const [warehouseId, setWarehouseId] = useState(0)
-    const [productIDs, setProductIds] = useState(0);
     const [bodyData, setBodyData] = useState("")
     const [batchData, setBatchData] = useState("")
     const [tableData, setTableData] = useState('')
     const [newValue, setNewValue] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     const buttonStyle = {
         textTransform: "none", // Set text transform to none for normal case
@@ -92,7 +92,7 @@ function HSEreport({ data }) {
 
     //API DATA CALLING USEEFECT-------------------------------------------------------------------------------------
     useEffect(() => {
-
+        if (docNum===null) {
         const GetNextDocNums = async () => {
             try {
                 const response = await GetNextDocNo({
@@ -107,7 +107,14 @@ function HSEreport({ data }) {
 
             }
         }
-        GetNextDocNums()
+        
+            GetNextDocNums()
+
+        if (newValue === true) {
+            GetNextDocNums()
+        }
+        setNewValue(false)
+    }
     }, [newValue])
 
 
@@ -165,12 +172,15 @@ function HSEreport({ data }) {
             const data = JSON.parse(response?.data.ResultData).Table
             const docNo = data.map((item) => item.sDocNo)
             const singleString = docNo.join();
-
             const iTransId = data.map((item) => item.iTransId)
+            console.log(data,singleString,iTransId,"singleString");
+
             if (data.length > 0) {
+                setLoading(true)
                 setdocNum(singleString)
                 setSlctTransId(iTransId.join())
                 setTransId(iTransId.join())
+
             } else {
                 Swal.fire({
                     icon: 'warning',
@@ -184,7 +194,6 @@ function HSEreport({ data }) {
             console.log("GetPrev_NextDocNos", error);
         }
     }
-
     const handleDelete = async () => {
         const data12 = selected
 
@@ -200,316 +209,322 @@ function HSEreport({ data }) {
             if (shouldDelete.isConfirmed) {
                 const res = await DeleteAllTransactions({
                     // iTransId: data12,
-                    iTransId:trnsId,
+                    iTransId: trnsId,
                     iUser: userId,
                     iMaster: 17,
                     iDocType: 2
                 });
                 Swal.fire('Deleted!', 'The profile has been deleted.', 'success');
 
-                if (res.data.MessageDescription==="Deleted") {
+                if (res.data.MessageDescription === "Deleted") {
                     GetPrev_NextDocNos(1)
                 }
                 // Add success message here if needed
             }
-            // fetchData(); // Initial data fetch
-            // setchangesTriggered(true);
+  
         } catch (error) {
             // Add error message here if needed
             Swal.fire('Error', `${error.message}`, 'error');
-            // setchangesTriggered(true);
-            // fetchData(); // Initial data fetch
-        }
-
-    }
-
-
-    useEffect(() => {
-//         const details = async () => {
-//             try {
-//                 const response = await GetSalesDetails({
-//                     // iTransId: 
-//                     iTransId:trnsId,
-//                 })
-//                 const head = JSON.parse(response.data.ResultData).Table
-//                 const body = JSON.parse(response.data.ResultData).Table1
-//                 const batch = JSON.parse(response.data.ResultData).Table2
-//                 console.log(head, "--------", body, "--------------", batch, "respons");
-
-
           
-
-//                     const updatedFormData = body.map(bodyItem => {
-//                         const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
-// // Extract unique iProduct values
-// const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
-
-// // Store the first unique iProduct value in a variable
-// const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
-
-// let batchData = {};
-// if (uniqueIProduct) {
-//   const res = await GetSalesBatch({
-//     iProduct: uniqueIProduct,
-//     iTransId: trnsId,
-//     iWarehouse: warehouseId,
-//   });
-
-//   batchData = JSON.parse(res?.data.ResultData);
-//   console.log(uniqueIProduct, res, batchData, "batchItems=======================================");
-// }
-
-                        
-
-
-
-//                         const updatedBatchPop = batchItems.map(batchItem => ({
-//                           sBatchNo: batchItem.sBatch,
-//                           fQty: batchItem.fQty,
-//                           iExpDate: '31-05-2024', // Example expiration date, set accordingly
-//                           ReqQty: batchItem.fQty, // Initialize as empty
-//                           bFoc: batchItem.bFoc,
-//                           iProduct: batchItem.iProduct,
-//                           iTransDtId: batchItem.iTransDtId,
-//                           ibatch: batchItem.ibatch,
-//                         }));
-
-//                         return {
-//                           Batch: "", 
-//                           Gross: bodyItem.fQty *bodyItem.fRate, // Set this based on your logic
-//                           Product: bodyItem.sProduct,
-//                           fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
-//                           Unit: bodyItem.Unit,
-//                           fAddCharges: bodyItem.fAddCharges,
-//                           fDiscAmt: bodyItem.fDiscAmt,
-//                           fDiscPerc: bodyItem.fDiscPerc,
-//                           fExciseTaxPer: bodyItem.fExciseTaxPer,
-//                           fFreeQty: bodyItem.fFoc, // Set this based on your logic
-//                           fNet: bodyItem.fNet,
-//                           fQty: bodyItem.fQty,
-//                           fRate: bodyItem.fRate,
-//                           fVAT: bodyItem.fVAT,
-//                           fVatPer: bodyItem.fVatPer,
-//                           iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
-//                           iProduct: bodyItem.iProduct,
-//                           iUnit: bodyItem.iUnit,
-//                           id: bodyItem.iTransDtId, // Or another unique identifier
-//                           sRemarks: bodyItem.sRemarks,
-//                           bBatch: bodyItem.bBatch,
-//                           batch: updatedBatchPop // Store the entire batch data if needed
-//                         };
-//                       });
-                  
-//                 setTableData(updatedFormData)
-//                 const headData = head[0];
-//                 const [day, month, year] = headData.sDate.split('-');
-//                 const formattedDate = `${year}-${month}-${day}`;
-
-//                 setDate(formattedDate);
-
-//                 setoutlet(headData.Outlet)
-//                 setoutletid(headData.iOutlet)
-//                 setWarehouseId(headData.iWarehouse)
-//                 setWarehouse(headData.Warehouse)
-//                 setsaleMane(headData.sDriver)
-//                 setsaleManeId(headData.iDriver)
-//                 setTypes(headData.iType_Sale)
-//                 setNarration(headData.sNarration)
-//                 setTransId(headData.iTransId)
-//                 setdocNum(headData.sDocNo)
-//             } catch (error) {
-//                 console.log(error);
-//             }
-//         }
-//         details()
-
-const details = async () => {
-    try {
-        console.log(trnsId,"trnsId---------------------------------------");
-      const response = await GetSalesDetails({ iTransId: trnsId });
-      const { Table: head, Table1: body, Table2: batch } = JSON.parse(response.data.ResultData);
-      const headData = head[0];
-
-      console.log(head, "--------", body, "--------------", batch, "response");
-  
-      const updatedFormData = await Promise.all(body.map(async (bodyItem) => {
-        const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
-  
-        // Extract unique iProduct values
-        const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
-  
-        // Store the first unique iProduct value in a variable
-        const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
-
-        let datas={}
-        if (uniqueIProduct) {
-          const res = await GetSalesBatch({
-            iProduct: uniqueIProduct,
-            // iTransId: trnsId,
-            iTransId: 0,
-            iWarehouse: headData.iWarehouse,
-          });
-  
-           datas = JSON.parse(res?.data.ResultData)
-
         }
 
-        const updatedBatchItems = batchItems.map(batchItem => {
-            const matchingData = datas.find(data => data.sBatchNo === batchItem.sBatch);
-            return matchingData
-              ? { ...batchItem, availQty: matchingData.fQty,iExpDate:matchingData.iExpDate }
-              : batchItem;
-          });
-
-          const totalFQty = datas.reduce((sum, item) => sum + item.fQty, 0);
-
-
-       
-
-
-const updatedBatchPop = updatedBatchItems
-.filter(batchItem => batchItem.bFoc === 0)
-.map(batchItem => ({
-  sBatchNo: batchItem.sBatch,
-  fQty: batchItem.availQty,
-  iExpDate: batchItem.iExpDate,
-  ReqQty: batchItem.fQty,
-  bFoc: batchItem.bFoc,
-  iProduct: batchItem.iProduct,
-  iTransDtId: batchItem.iTransDtId,
-  ibatch: batchItem.ibatch
-}));
-
-const freeUpdatedBatch = updatedBatchItems
-.filter(batchItem => batchItem.bFoc === 1)
-.map(batchItem => ({
-  sBatchNo: batchItem.sBatch,
-  fQty: batchItem.availQty,
-  iExpDate: batchItem.iExpDate,
-  ReqQty: batchItem.fQty,
-  bFoc: batchItem.bFoc,
-  iProduct: batchItem.iProduct,
-  iTransDtId: batchItem.iTransDtId,
-  ibatch: batchItem.ibatch
-}));
-
-console.log(freeUpdatedBatch,updatedBatchPop,"batchItems=======================================");
-
-  
-        return {
-          Batch: "",
-          Gross: bodyItem.fQty * bodyItem.fRate, // Set this based on your logic
-          Product: bodyItem.sProduct,
-          fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
-          Unit: bodyItem.Unit,
-          fAddCharges: bodyItem.fAddCharges,
-          fDiscAmt: bodyItem.fDiscAmt,
-          fDiscPerc: bodyItem.fDiscPerc,
-          fExciseTaxPer: bodyItem.fExciseTaxPer,
-          fFreeQty: bodyItem.fFoc, // Set this based on your logic
-          fNet: bodyItem.fNet,
-          fQty: bodyItem.fQty,
-          fRate: bodyItem.fRate,
-          fVAT: bodyItem.fVAT,
-          fVatPer: bodyItem.fVatPer,
-          iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
-          iProduct: bodyItem.iProduct,
-          iUnit: bodyItem.iUnit,
-          id: bodyItem.iTransDtId, // Or another unique identifier
-          sRemarks: bodyItem.sRemarks,
-          bBatch: bodyItem.bBatch,
-          batch: updatedBatchPop, // Store the entire batch data if needed
-          freeBatch:freeUpdatedBatch,
-          availqty:totalFQty,
-        };
-      }));
-  
-      setTableData(updatedFormData);
-  
-      const [day, month, year] = headData.sDate.split('-');
-      const formattedDate = `${year}-${month}-${day}`;
-  
-      setDate(formattedDate);
-      setoutlet(headData.Outlet);
-      setoutletid(headData.iOutlet);
-      setWarehouseId(headData.iWarehouse);
-      setWarehouse(headData.Warehouse);
-      setsaleMane(headData.sDriver);
-      setsaleManeId(headData.iDriver);
-      setTypes(headData.iType_Sale);
-      setNarration(headData.sNarration);
-      setTransId(headData.iTransId);
-      setdocNum(headData.sDocNo);
-    } catch (error) {
-      console.log(error);
     }
-  };
-  
-  details();
-  
 
-    }, [selectTransid, selected ,trnsId])
+    //GetSalesDetails================================================================
+    useEffect(() => {
+        //         const details = async () => {
+        //             try {
+        //                 const response = await GetSalesDetails({
+        //                     // iTransId: 
+        //                     iTransId:trnsId,
+        //                 })
+        //                 const head = JSON.parse(response.data.ResultData).Table
+        //                 const body = JSON.parse(response.data.ResultData).Table1
+        //                 const batch = JSON.parse(response.data.ResultData).Table2
+        //                 console.log(head, "--------", body, "--------------", batch, "respons");
 
+
+
+
+        //                     const updatedFormData = body.map(bodyItem => {
+        //                         const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
+        // // Extract unique iProduct values
+        // const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
+
+        // // Store the first unique iProduct value in a variable
+        // const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
+
+        // let batchData = {};
+        // if (uniqueIProduct) {
+        //   const res = await GetSalesBatch({
+        //     iProduct: uniqueIProduct,
+        //     iTransId: trnsId,
+        //     iWarehouse: warehouseId,
+        //   });
+
+        //   batchData = JSON.parse(res?.data.ResultData);
+        //   console.log(uniqueIProduct, res, batchData, "batchItems=======================================");
+        // }
+
+
+
+
+
+        //                         const updatedBatchPop = batchItems.map(batchItem => ({
+        //                           sBatchNo: batchItem.sBatch,
+        //                           fQty: batchItem.fQty,
+        //                           iExpDate: '31-05-2024', // Example expiration date, set accordingly
+        //                           ReqQty: batchItem.fQty, // Initialize as empty
+        //                           bFoc: batchItem.bFoc,
+        //                           iProduct: batchItem.iProduct,
+        //                           iTransDtId: batchItem.iTransDtId,
+        //                           ibatch: batchItem.ibatch,
+        //                         }));
+
+        //                         return {
+        //                           Batch: "", 
+        //                           Gross: bodyItem.fQty *bodyItem.fRate, // Set this based on your logic
+        //                           Product: bodyItem.sProduct,
+        //                           fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
+        //                           Unit: bodyItem.Unit,
+        //                           fAddCharges: bodyItem.fAddCharges,
+        //                           fDiscAmt: bodyItem.fDiscAmt,
+        //                           fDiscPerc: bodyItem.fDiscPerc,
+        //                           fExciseTaxPer: bodyItem.fExciseTaxPer,
+        //                           fFreeQty: bodyItem.fFoc, // Set this based on your logic
+        //                           fNet: bodyItem.fNet,
+        //                           fQty: bodyItem.fQty,
+        //                           fRate: bodyItem.fRate,
+        //                           fVAT: bodyItem.fVAT,
+        //                           fVatPer: bodyItem.fVatPer,
+        //                           iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
+        //                           iProduct: bodyItem.iProduct,
+        //                           iUnit: bodyItem.iUnit,
+        //                           id: bodyItem.iTransDtId, // Or another unique identifier
+        //                           sRemarks: bodyItem.sRemarks,
+        //                           bBatch: bodyItem.bBatch,
+        //                           batch: updatedBatchPop // Store the entire batch data if needed
+        //                         };
+        //                       });
+
+        //                 setTableData(updatedFormData)
+        //                 const headData = head[0];
+        //                 const [day, month, year] = headData.sDate.split('-');
+        //                 const formattedDate = `${year}-${month}-${day}`;
+
+        //                 setDate(formattedDate);
+
+        //                 setoutlet(headData.Outlet)
+        //                 setoutletid(headData.iOutlet)
+        //                 setWarehouseId(headData.iWarehouse)
+        //                 setWarehouse(headData.Warehouse)
+        //                 setsaleMane(headData.sDriver)
+        //                 setsaleManeId(headData.iDriver)
+        //                 setTypes(headData.iType_Sale)
+        //                 setNarration(headData.sNarration)
+        //                 setTransId(headData.iTransId)
+        //                 setdocNum(headData.sDocNo)
+        //             } catch (error) {
+        //                 console.log(error);
+        //             }
+        //         }
+        //         details()
+
+        const details = async () => {
+            try {
+                const response = await GetSalesDetails({ iTransId: trnsId });
+                const { Table: head, Table1: body, Table2: batch } = JSON.parse(response.data.ResultData);
+                const headData = head[0];
+                console.log(head, "--------", body, "--------------", batch, "response", loading);
+
+                if (loading) {
+                    const [day, month, year] = headData.sDate.split('-');
+                    const formattedDate = `${year}-${month}-${day}`;
+                    setDate(formattedDate);
+                    setoutlet(headData.Outlet);
+                    setoutletid(headData.iOutlet);
+                    setWarehouseId(headData.iWarehouse);
+                    setWarehouse(headData.Warehouse);
+                    setsaleMane(headData.sDriver);
+                    setsaleManeId(headData.iDriver);
+                    setTypes(headData.iType_Sale);
+                    setNarration(headData.sNarration);
+                    setTransId(headData.iTransId);
+                    setdocNum(headData.sDocNo);
+
+                    console.log(batch,"tableData=======================================");
+
+                    const updatedFormData = await Promise.all(body.map(async (bodyItem) => {
+
+                        const batchItems = batch.filter(batchItem => batchItem.iProduct === bodyItem.iProduct);
+
+                        // Extract unique iProduct values
+                        const uniqueIProducts = [...new Set(batchItems.map(item => item.iProduct))];
+
+                        // Store the first unique iProduct value in a variable
+                        const uniqueIProduct = uniqueIProducts.length > 0 ? uniqueIProducts[0] : null;
+
+                        let datas = {}
+                        if (uniqueIProduct) {
+                            const res = await GetSalesBatch({
+                                iProduct: uniqueIProduct,
+                                // iTransId: trnsId,
+                                iTransId: 0,
+                                iWarehouse: headData.iWarehouse,
+                            });
+
+                            datas = JSON.parse(res?.data.ResultData)
+
+                        }
+
+                        // const updatedBatchItems = batchItems.map(batchItem => {
+                        //     const matchingData = datas.find(data => data.sBatchNo === batchItem.sBatch);
+                        //     return matchingData
+                        //         ? { ...batchItem, availQty: matchingData.fQty, iExpDate: matchingData.iExpDate }
+                        //         : batchItem;
+                        // });
+
+                        const updatedBatchItems = batchItems
+                            ? batchItems.map(batchItem => {
+                                const matchingData = datas.find(data => data.sBatchNo === batchItem.sBatch);
+                                return matchingData
+                                    ? { ...batchItem, availQty: matchingData.fQty, iExpDate: matchingData.iExpDate }
+                                    : batchItem;
+                            })
+                            : [];
+
+
+                        const totalFQty = Array.isArray(datas) ? datas.reduce((sum, item) => sum + item.fQty, 0) : 0;
+
+
+
+
+
+                        const updatedBatchPop = updatedBatchItems
+                            .filter(batchItem => batchItem.bFoc === 0)
+                            .map(batchItem => ({
+                                sBatchNo: batchItem.sBatch,
+                                fQty: batchItem.availQty,
+                                iExpDate: batchItem.iExpDate,
+                                ReqQty: batchItem.fQty,
+                                bFoc: batchItem.bFoc,
+                                iProduct: batchItem.iProduct,
+                                iTransDtId: batchItem.iTransDtId,
+                                ibatch: batchItem.ibatch
+                            }));
+
+                        const freeUpdatedBatch = updatedBatchItems
+                            .filter(batchItem => batchItem.bFoc === 1)
+                            .map(batchItem => ({
+                                sBatchNo: batchItem.sBatch,
+                                fQty: batchItem.availQty,
+                                iExpDate: batchItem.iExpDate,
+                                ReqQty: batchItem.fQty,
+                                bFoc: batchItem.bFoc,
+                                iProduct: batchItem.iProduct,
+                                iTransDtId: batchItem.iTransDtId,
+                                ibatch: batchItem.ibatch
+                            }));
+
+
+                        return {
+                            Batch: "",
+                            Gross: bodyItem.fQty * bodyItem.fRate, // Set this based on your logic
+                            Product: bodyItem.sProduct,
+                            fTotalQty: bodyItem.fQty + bodyItem.fFoc, // Set this based on your logic
+                            Unit: bodyItem.Unit,
+                            fAddCharges: bodyItem.fAddCharges,
+                            fDiscAmt: bodyItem.fDiscAmt,
+                            fDiscPerc: bodyItem.fDiscPerc,
+                            fExciseTaxPer: bodyItem.fExciseTaxPer,
+                            fFreeQty: bodyItem.fFoc, // Set this based on your logic
+                            fNet: bodyItem.fNet,
+                            fQty: bodyItem.fQty,
+                            fRate: bodyItem.fRate,
+                            fVAT: bodyItem.fVAT,
+                            fVatPer: bodyItem.fVatPer,
+                            iBatch: batchItems.length > 0 ? batchItems[0].ibatch : "", // Assuming you have a way to determine the batch id
+                            iProduct: bodyItem.iProduct,
+                            iUnit: bodyItem.iUnit,
+                            id: bodyItem.iTransDtId, // Or another unique identifier
+                            sRemarks: bodyItem.sRemarks,
+                            bBatch: bodyItem.bBatch,
+                            batch: updatedBatchPop, // Store the entire batch data if needed
+                            freeBatch: freeUpdatedBatch,
+                            availqty: totalFQty,
+                        };
+                    }));
+                    setTableData(updatedFormData);
+                }
+                setLoading(false)
+            } catch (error) {
+                console.log(error);
+                setLoading(false)
+            }
+        };
+        details();
+    }, [selectTransid, selected, trnsId])
+
+//handleNew=====================================================================================================
     const handleNew = async () => {
         setBatchData("")
         setBodyData("")
         setWarehouseId('')
-        // setdocNum('')
         setWarehouse('')
         setsaleMane('')
         setoutlet('')
         setNarration('')
         setTypes('')
-        setProductIds('')
         setoutletid('')
+        setdocNum(null)
 
         setNewValue(true)
         setTransId(0)
     }
 
-
+//handleSave=====================================================================================================
     const handleSave = async () => {
-//WARNGING ALERT MESSAGES----------------------------------------------------------
-        if (saleManeId===0) {
+        //WARNGING ALERT MESSAGES----------------------------------------------------------
+        if (saleManeId === 0) {
             Swal.fire({
-                            title: "Error!",
-                            text: "Select a  Driver",
-                            icon: "error",
-                            confirmButtonText: "OK",
-                        });
-                        return;
+                title: "Error!",
+                text: "Select a  Driver",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
         }
-        if (warehouseId===0) {
+        if (warehouseId === 0) {
             Swal.fire({
-                            title: "Error!",
-                            text: "Select a  Warehouse",
-                            icon: "error",
-                            confirmButtonText: "OK",
-                        });
-                        return;
+                title: "Error!",
+                text: "Select a  Warehouse",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
         }
-        if (outletid===0) {
+        if (outletid === 0) {
             Swal.fire({
-                            title: "Error!",
-                            text: "Select a  outlet",
-                            icon: "error",
-                            confirmButtonText: "OK",
-                        });
-                        return;
+                title: "Error!",
+                text: "Select a  outlet",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
         }
-        if (Number(typess)===0) {
+        if (Number(typess) === 0) {
             Swal.fire({
-                            title: "Error!",
-                            text: "Select a payment type Cash or Credit",
-                            icon: "error",
-                            confirmButtonText: "OK",
-                        });
-                        return;
+                title: "Error!",
+                text: "Select a payment type Cash or Credit",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
         }
         if (bodyData.length > 0) {
             for (let i = 0; i < bodyData.length; i++) {
                 const item = bodyData[i];
-        
+
                 if (!item.iProduct || item.iProduct === 0) {
                     Swal.fire({
                         title: "Error!",
@@ -519,7 +534,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                     });
                     return;
                 }
-        
+
                 if (!item.fQty || item.fQty === 0) {
                     Swal.fire({
                         title: "Error!",
@@ -529,8 +544,8 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                     });
                     return;
                 }
-        
-                if (!item.iUnit||item.iUnit===0) {
+
+                if (!item.iUnit || item.iUnit === 0) {
                     Swal.fire({
                         title: "Error!",
                         text: "Please select a unit",
@@ -540,7 +555,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                     return;
                 }
 
-                if (!item.fRate||item.fRate===0) {
+                if (!item.fRate || item.fRate === 0) {
                     Swal.fire({
                         title: "Error!",
                         text: "Please enter a Rate",
@@ -564,7 +579,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                 iUser: Number(userId),
                 iType_Sale: Number(typess),
                 iDriver: saleManeId,
-                Body: 
+                Body:
                     bodyData?.map(item => ({
                         iProduct: item.iProduct,
                         fQty: item.fQty,
@@ -581,25 +596,28 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                         iUnit: item.iUnit,
                         fNet: item.fNet,
                         Batch: [
-                            ...item.batch.map(batchItem => ({
-                              iBatch: batchItem.iBatch,
-                              sBatch: batchItem.sBatchNo,
-                              fQty: batchItem.ReqQty,
-                              iCondition: batchItem.iCondition,
-                              bFoc: batchItem.bFoc
-                            })),
-                            ...item.freeBatch.map(freeBatchItem => ({
-                              iBatch: freeBatchItem.iBatch,
-                              sBatch: freeBatchItem.sBatchNo,
-                              fQty: freeBatchItem.ReqQty,
-                              iCondition: freeBatchItem.iCondition,
-                              bFoc: freeBatchItem.bFoc
-                            }))
+                            ...(item.batch ? item.batch.map(batchItem => ({
+                                iBatch: batchItem.iBatch,
+                                sBatch: batchItem.sBatchNo,
+                                fQty: batchItem.ReqQty,
+                                iCondition: batchItem.iCondition,
+                                // bFoc: batchItem.bFoc,
+                                bFoc: 0
+
+                            })) : []),
+                            ...(item.freeBatch ? item.freeBatch.map(freeBatchItem => ({
+                                iBatch: freeBatchItem.iBatch,
+                                sBatch: freeBatchItem.sBatchNo,
+                                fQty: freeBatchItem.ReqQty,
+                                iCondition: freeBatchItem.iCondition,
+                                // bFoc: freeBatchItem.bFoc,
+                                bFoc:1
+                            })) : [])
                         ]
                     }))
             };
 
-            // console.log(formData,"handleSave");
+            console.log(formData,"handleSave");
 
             const res = await PostSales(formData)
 
@@ -612,18 +630,17 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                     confirmButtonText: "OK",
                 });
                 setBatchData("")
-        setBodyData("")
-        setWarehouseId('')
-        // setdocNum('')
-        setWarehouse('')
-        setsaleMane('')
-        setoutlet('')
-        setNarration('')
-        setTypes('')
-        setProductIds('')
-        setoutletid('')
-        setTransId(0)
-        setNewValue(true)
+                setBodyData("")
+                setWarehouseId('')
+                setdocNum(null)
+                setWarehouse('')
+                setsaleMane('')
+                setoutlet('')
+                setNarration('')
+                setTypes('')
+                setoutletid('')
+                setTransId(0)
+                setNewValue(true)
             } else {
                 Swal.fire({
                     title: `${res.data.MessageDescription}`,
@@ -739,7 +756,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                                 >
                                     Next
                                 </Button>
-                               
+
                                 <Button
                                     variant="contained"
                                     startIcon={<CloseIcon />}
@@ -863,7 +880,7 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                                         <MDBCol lg="3" md="4" sm="6" xs="12">
                                             <div className="mb-3">
                                                 <FormControl alignItems="start">
-                                                   
+
                                                     <RadioGroup
                                                         row
                                                         aria-labelledby="demo-row-radio-buttons-group-label"
@@ -871,8 +888,8 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                                                         value={typess}
                                                         onChange={handleRadioChange}
                                                     >
-                                                         <FormLabel alignItems="start" id="demo-row-radio-buttons-group-label"
-                                                    >Types</FormLabel>
+                                                        <FormLabel alignItems="start" id="demo-row-radio-buttons-group-label"
+                                                        >Types</FormLabel>
                                                         <FormControlLabel value="1" control={<Radio />} label="Cash" />
                                                         <FormControlLabel value="2" control={<Radio />} label="Credit" />
                                                     </RadioGroup>
@@ -885,18 +902,19 @@ console.log(freeUpdatedBatch,updatedBatchPop,"batchItems========================
                             </MDBCard>
                         </form>
                     </Box>
-
-                    <EnhancedTable outlet={outlet}
-                        warehouseId={warehouseId}
-                        setProductIds={setProductIds}
-                        outletid={outletid}
-                        setBodyData={setBodyData}
-                        setBatchData={setBatchData}
-                        tableData={tableData}
-                        newValue={newValue}
-                        setNewValue={setNewValue}
-                        trnsId={trnsId}
-                    />
+{!loading &&(
+     <EnhancedTable outlet={outlet}
+     warehouseId={warehouseId}
+     outletid={outletid}
+     setBodyData={setBodyData}
+     setBatchData={setBatchData}
+     tableData={tableData}
+     newValue={newValue}
+     setNewValue={setNewValue}
+     trnsId={trnsId}
+ />
+)}
+                   
 
 
                 </Box>
